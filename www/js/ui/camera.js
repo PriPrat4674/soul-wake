@@ -1,46 +1,16 @@
 // Live-camera proof photo. takeProof(task) resolves true when a photo is accepted, false if cancelled.
-// To add photo checking later (e.g. AI), change only judge() below.
+// takeReference(task) captures a "same place" reference photo for the photo check.
+// Photo checking lives in features/photo-check.js (on-device model); judge() just calls it.
 import { on } from '../core/events.js';
 import { refs, esc } from '../core/util.js';
+import { PHOTO_CHECK } from '../config.js';
+import * as photoCheck from '../features/photo-check.js';
 
-let root, r, stream = null, facing = 'user', settle = null;
-let attempts = 0;
+let root, r, stream = null, facing = 'user', settle = null, task = null, mode = 'proof', fails = 0, lastPhoto = null;
 
-// Quick on-phone checks; the photo never leaves the phone. It catches a dark room or a covered
-// lens, and (where the phone can detect faces) a selfie with no face. It doesn't recognise
-// objects, so it never claims to have seen your tea.
-async function judge(photoDataUrl, taskTitle) {
-  attempts++;
-  try {
-    const img = new Image();
-    await new Promise((res, rej) => { img.onload = res; img.onerror = rej; img.src = photoDataUrl; });
-    const canvas = document.createElement('canvas');
-    const w = 120, h = Math.round(120 * (img.height / img.width || 1));
-    canvas.width = w; canvas.height = h;
-    const ctx = canvas.getContext('2d');
-    ctx.drawImage(img, 0, 0, w, h);
-    const data = ctx.getImageData(0, 0, w, h).data;
-    let sum = 0, sumSq = 0;
-    for (let i = 0; i < data.length; i += 4) {
-      const lum = 0.299 * data[i] + 0.587 * data[i + 1] + 0.114 * data[i + 2];
-      sum += lum; sumSq += lum * lum;
-    }
-    const n = w * h, avg = sum / n, spread = Math.sqrt(Math.max(0, sumSq / n - avg * avg));
-    if (avg < 22) return { pass: false, reason: 'Too dark. Turn on a light.' };
-    if (spread < 9) return { pass: false, reason: 'The lens looks covered.' };
-    if (/selfie|eyes|face/i.test(taskTitle || '') && 'FaceDetector' in window) {
-      try {
-        const faces = await new window.FaceDetector({ fastMode: true, maxDetectedFaces: 1 }).detect(img);
-        if (!faces?.length) {
-          // Face detection misses sometimes, so the second try is taken on trust.
-          return attempts >= 2 ? { pass: true, reason: 'Saved. No face found, so this one’s on trust.' } : { pass: false, reason: 'No face found. Look at the camera.' };
-        }
-      } catch {}
-    }
-    return { pass: true, reason: 'Saved as proof.' };
-  } catch {
-    return { pass: true, reason: 'Saved as proof.' };
-  }
+async function judge(photoDataUrl, t) {
+  if (mode === 'reference') return { pass: true, reason: 'Reference saved. I’ll compare tomorrow’s photos with this spot.' };
+  return photoCheck.verify(photoDataUrl, t);
 }
 
 export function mount(el) {
@@ -59,12 +29,15 @@ export function mount(el) {
   on('morning:ringing', () => finish(false));
 }
 
-export function takeProof(task) {
+export function takeProof(t) { return open(t, 'proof'); }
+export function takeReference(t) { return open(t, 'reference'); }
+
+function open(t, how) {
   finish(false);
-  attempts = 0;
-  facing = /selfie|eyes|face/i.test(task.name + task.proof) ? 'user' : 'environment';
-  r.title.textContent = task.name;
-  r.proof.textContent = `Photo must show: ${task.proof}`;
+  task = t; mode = how; fails = 0;
+  facing = /selfie|eyes|face/i.test(t.name + t.proof) ? 'user' : 'environment';
+  r.title.textContent = how === 'reference' ? `Reference: ${t.name}` : t.name;
+  r.proof.textContent = how === 'reference' ? 'Take it where you’ll do this task. Tomorrow’s photos must be in the same spot.' : `Photo must show: ${t.proof}`;
   r.verdict.innerHTML = '';
   root.classList.remove('hidden');
   startLive();
@@ -114,11 +87,16 @@ async function capture() {
   r.shot.classList.remove('hidden');
   v.classList.add('hidden');
   setActions('');
-  const result = await judge(photo, r.title.textContent);
-  r.verdict.innerHTML = `<div class="verdict ${result.pass ? 'pass' : 'fail'}"><b>${result.pass ? 'Done.' : 'Try again.'}</b> ${esc(result.reason)}</div>`;
+  r.verdict.innerHTML = photoCheck.state().enabled && mode === 'proof' ? '<div class="verdict checking"><b>Checking…</b> On your phone, nothing is uploaded.</div>' : '';
+  const result = await judge(photo, task);
+  lastPhoto = photo;
+  if (!result.pass) fails++;
+  const trust = !result.pass && fails >= PHOTO_CHECK.triesBeforeTrust;
+  const meta = result.checked ? `<span class="verdict-meta">${result.score != null ? `Match ${Math.round(result.score * 100)}%` : ''}${result.place != null ? ` · Same spot ${Math.round(result.place * 100)}%` : ''}</span>` : '';
+  r.verdict.innerHTML = `<div class="verdict ${result.pass ? 'pass' : 'fail'}"><b>${result.pass ? 'Done.' : 'Try again.'}</b> ${esc(result.reason)}${meta}</div>`;
   setActions(result.pass
-    ? `<button class="btn gold" data-act="next" style="flex:1">Next</button><button class="btn line" data-act="retake">Retake</button>`
-    : `<button class="btn gold" data-act="retake" style="flex:1">Retake</button><button class="btn quiet" data-act="cancel">Cancel</button>`);
+    ? `<button class="btn gold" data-act="next" style="flex:1">${mode === 'reference' ? 'Save' : 'Next'}</button><button class="btn line" data-act="retake">Retake</button>`
+    : `<button class="btn gold" data-act="retake" style="flex:1">Retake</button>${trust ? '<button class="btn line" data-act="trust">Count it anyway</button>' : ''}<button class="btn quiet" data-act="cancel">Cancel</button>`);
 }
 
 function setActions(html) {
@@ -129,6 +107,10 @@ function setActions(html) {
     if (act === 'flip') { facing = facing === 'user' ? 'environment' : 'user'; startLive(); }
     if (act === 'retake') startLive();
     if (act === 'cancel') finish(false);
-    if (act === 'next') finish(true);
+    if (act === 'next') {
+      if (mode === 'reference' && lastPhoto) { r.actions.innerHTML = ''; photoCheck.setReference(task.id, lastPhoto).finally(() => finish(true)); }
+      else finish(true);
+    }
+    if (act === 'trust') { photoCheck.countUnverified(); finish(true); }
   };
 }

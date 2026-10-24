@@ -1,35 +1,44 @@
 01. Setup - meet Pip — 01-setup---meet-pip.png
 02. Setup - name typed — 02-setup---name-typed.png
-03. Setup - logo — 03-setup---logo.png
-04. Setup - colour — 04-setup---colour.png
-05. Setup - theme — 05-setup---theme.png
-06. Setup - font — 06-setup---font.png
-07. Setup - style — 07-setup---style.png
-08. Setup - sleep schedule — 08-setup---sleep-schedule.png
-09. Setup - Android permissions — 09-setup---android-permissions.png
-10. Setup - notifications allowed — 10-setup---notifications-allowed.png
-11. Setup - all set — 11-setup---all-set.png
-12. Pip flies in after setup — 12-pip-flies-in-after-setup.png
-13. Alarm tab - first look — 13-alarm-tab---first-look.png
-14. Menu — 14-menu.png
-15. Menu - Look and feel — 15-menu---look-and-feel.png
-16. Tasks - added Make the bed — 16-tasks---added-make-the-bed.png
-17. Sounds — 17-sounds.png
-18. Shared a Spotify playlist — 18-shared-a-spotify-playlist.png
-19. Menu - Sleep schedule — 19-menu---sleep-schedule.png
-20. Armed — 20-armed.png
-21. Morning - ringing — 21-morning---ringing.png
-22. Morning - typing with a mistake — 22-morning---typing-with-a-mistake.png
-23. Morning - tasks — 23-morning---tasks.png
-24. Morning - stepped away, pill counts down — 24-morning---stepped-away,-pill-counts-down.png
-25. Morning - first task proven — 25-morning---first-task-proven.png
-26. Morning - check-in — 26-morning---check-in.png
-27. Morning - report card — 27-morning---report-card.png
-28. Progress — 28-progress.png
-29. Alarm tab - after first morning — 29-alarm-tab---after-first-morning.png
-30. App lock reminder — 30-app-lock-reminder.png
-31. Ivory, rose, friendly, bold — 31-ivory,-rose,-friendly,-bold.png
-32. Dusk, gold, typewriter, elegant — 32-dusk,-gold,-typewriter,-elegant.png
-33. Kerala city theme — 33-kerala-city-theme.png
-34. Nap - how long? — 34-nap---how-long?.png
-35. Nap - over — 35-nap---over.png
+03. Setup - buddy PIN — 03-setup---buddy-pin.png
+04. Setup - PIN once more — 04-setup---pin-once-more.png
+05. Setup - PIN set — 05-setup---pin-set.png
+06. Setup - logo — 06-setup---logo.png
+07. Setup - colour — 07-setup---colour.png
+08. Setup - theme — 08-setup---theme.png
+09. Setup - font — 09-setup---font.png
+10. Setup - style — 10-setup---style.png
+11. Setup - sleep schedule — 11-setup---sleep-schedule.png
+12. Setup - Android permissions — 12-setup---android-permissions.png
+13. Setup - notifications allowed — 13-setup---notifications-allowed.png
+14. Setup - all set — 14-setup---all-set.png
+15. Pip flies in after setup — 15-pip-flies-in-after-setup.png
+16. Today - first look — 16-today---first-look.png
+17. Menu — 17-menu.png
+18. Menu - Look and feel — 18-menu---look-and-feel.png
+19. Routine - added Make the bed — 19-routine---added-make-the-bed.png
+20. Sleep tab — 20-sleep-tab.png
+21. Wake-up music — 21-wake-up-music.png
+22. Shared a Spotify playlist — 22-shared-a-spotify-playlist.png
+23. Menu - Sleep schedule — 23-menu---sleep-schedule.png
+24. Menu - Night guard — 24-menu---night-guard.png
+25. Armed, night guard on — 25-armed,-night-guard-on.png
+26. Night disarm - sums — 26-night-disarm---sums.png
+27. Night disarm - buddy PIN — 27-night-disarm---buddy-pin.png
+28. Night disarm - forgot the PIN — 28-night-disarm---forgot-the-pin.png
+29. Uninstall guard — 29-uninstall-guard.png
+30. Morning - ringing — 30-morning---ringing.png
+31. Morning - typing with a mistake — 31-morning---typing-with-a-mistake.png
+32. Morning - tasks — 32-morning---tasks.png
+33. Morning - stepped away, pill counts down — 33-morning---stepped-away,-pill-counts-down.png
+34. Morning - first task proven — 34-morning---first-task-proven.png
+35. Morning - check-in — 35-morning---check-in.png
+36. Morning - report card — 36-morning---report-card.png
+37. Progress — 37-progress.png
+38. Today - after first morning — 38-today---after-first-morning.png
+39. App lock reminder — 39-app-lock-reminder.png
+40. Ivory, rose, friendly, bold — 40-ivory,-rose,-friendly,-bold.png
+41. Dusk, gold, typewriter, elegant — 41-dusk,-gold,-typewriter,-elegant.png
+42. Kerala city theme — 42-kerala-city-theme.png
+43. Nap - how long? — 43-nap---how-long?.png
+44. Nap - over — 44-nap---over.png

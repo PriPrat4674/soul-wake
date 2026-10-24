@@ -16,7 +16,7 @@ export function mount(root) {
   root.innerHTML = `
     <div class="inner center">
       <div data-ref="pet"></div>
-      <h1 style="margin-top:12px">Nap’s over</h1>
+      <h1 style="margin-top:12px">Nap’s over ☀️</h1>
       <p class="soft" data-ref="line" style="margin-top:6px"></p>
       <button class="btn gold block" data-ref="up" style="margin-top:22px;min-height:64px;font-size:1.25rem">I’m up</button>
     </div>`;
@@ -24,7 +24,7 @@ export function mount(root) {
 
   function show(nap) {
     r.pet.innerHTML = petMarkup('sleepy', 120);
-    r.line.textContent = `You slept from ${fmtTime(new Date(nap.startAt))}. Up you get`;
+    r.line.textContent = `You slept from ${fmtTime(new Date(nap.startAt))}. Up you get 🌤️`;
     root.classList.remove('hidden');
     if (!native.isNative()) { sounds.startLoop('alarm').then((ok) => { if (!ok) audio.startBeeps(); }); audio.vibrate(true); }
     r.up.focus();
@@ -37,7 +37,7 @@ export function mount(root) {
     vibrateTap(30);
     const n = sleep.endNap();
     hide();
-    toast(n ? `Nap logged: ${fmtNap(n.hours)}` : 'Morning-ish!');
+    toast(n ? `Nap logged: ${fmtNap(n.hours)} 😴` : 'Morning-ish! ☀️');
   };
   on('nap:ring', show);
   on('nap:ended', hide);

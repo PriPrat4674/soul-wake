@@ -1,4 +1,4 @@
-// "Share → First Light": links shared from the Spotify, YouTube or Instagram apps (or pasted).
+// "Share → SoulWake": links shared from the Spotify, YouTube or Instagram apps (or pasted).
 // Works out what a link is; the UI (share-view.js) decides what to do with it.
 import { on, emit } from '../core/events.js';
 import * as spotify from './sources/spotify.js';
@@ -43,17 +43,17 @@ export function apply(kind, url, use) {
     const r = spotify.setLink(url);
     if (!r.ok) return r;
     music.setSource('spotify');
-    return { ok: true, message: `${r.name} will wake you`, tab: 'sounds' };
+    return { ok: true, message: `${r.name} will wake you 🎵`, tab: 'sounds' };
   }
   if (use === 'clip' || kind === 'clip') {
     const r = boost.addLink(url);
-    return r.ok ? { ok: true, message: 'Clip saved. It plays after your check-in', tab: 'sounds' } : r;
+    return r.ok ? { ok: true, message: 'Clip saved. It plays after your check-in 🚀', tab: 'sounds' } : r;
   }
   if (kind === 'youtube-playlist' || kind === 'youtube-video') {
     const r = youtube.setLink(url);
     if (!r.ok) return r;
     music.setSource('youtube');
-    return { ok: true, message: r.listId ? 'YouTube playlist set as your alarm' : 'That video is your alarm now', tab: 'sounds' };
+    return { ok: true, message: r.listId ? 'YouTube playlist set as your alarm 🎵' : 'That video is your alarm now 🎵', tab: 'sounds' };
   }
   return { ok: false, reason: 'I can use Spotify, YouTube and Instagram links.' };
 }

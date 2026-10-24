@@ -28,7 +28,7 @@
     </queries>
 
     <application
-        android:allowBackup="false"
+        android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_launcher"
@@ -43,7 +43,7 @@
             android:launchMode="singleTask"
             android:screenOrientation="portrait"
             android:exported="true">
-            <!-- "Share → First Light" from Spotify, YouTube and Instagram: links arrive as plain text. -->
+            <!-- "Share → SoulWake" from Spotify, YouTube and Instagram: links arrive as plain text. -->
             <intent-filter android:label="@string/share_label">
                 <action android:name="android.intent.action.SEND" />
                 <category android:name="android.intent.category.DEFAULT" />
@@ -51,14 +51,15 @@
             </intent-filter>
         </activity>
 
-        <!-- One launcher entry per logo; the app enables the one you picked. -->
-        <activity-alias android:name=".IconSunrise" android:targetActivity=".MainActivity" android:icon="@mipmap/ic_launcher" android:roundIcon="@mipmap/ic_launcher" android:enabled="true" android:exported="true">
+        <!-- One launcher entry per logo; the app enables the one you picked. IconOwl (name kept from
+             older versions so updates keep your icon) shows the SoulWake smiley and is the default. -->
+        <activity-alias android:name=".IconSunrise" android:targetActivity=".MainActivity" android:icon="@mipmap/ic_launcher_sunrise" android:roundIcon="@mipmap/ic_launcher_sunrise" android:enabled="false" android:exported="true">
             <intent-filter><action android:name="android.intent.action.MAIN" /><category android:name="android.intent.category.LAUNCHER" /></intent-filter>
         </activity-alias>
         <activity-alias android:name=".IconCrescent" android:targetActivity=".MainActivity" android:icon="@mipmap/ic_launcher_crescent" android:roundIcon="@mipmap/ic_launcher_crescent" android:enabled="false" android:exported="true">
             <intent-filter><action android:name="android.intent.action.MAIN" /><category android:name="android.intent.category.LAUNCHER" /></intent-filter>
         </activity-alias>
-        <activity-alias android:name=".IconOwl" android:targetActivity=".MainActivity" android:icon="@mipmap/ic_launcher_owl" android:roundIcon="@mipmap/ic_launcher_owl" android:enabled="false" android:exported="true">
+        <activity-alias android:name=".IconOwl" android:targetActivity=".MainActivity" android:icon="@mipmap/ic_launcher" android:roundIcon="@mipmap/ic_launcher" android:enabled="true" android:exported="true">
             <intent-filter><action android:name="android.intent.action.MAIN" /><category android:name="android.intent.category.LAUNCHER" /></intent-filter>
         </activity-alias>
         <activity-alias android:name=".IconBell" android:targetActivity=".MainActivity" android:icon="@mipmap/ic_launcher_bell" android:roundIcon="@mipmap/ic_launcher_bell" android:enabled="false" android:exported="true">
@@ -85,16 +86,6 @@
                 <action android:name="android.intent.action.TIME_SET" />
                 <action android:name="android.intent.action.TIMEZONE_CHANGED" />
             </intent-filter>
-        </receiver>
-
-        <!-- Android Home Screen Widget -->
-        <receiver android:name=".PipWidgetProvider" android:exported="true">
-            <intent-filter>
-                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
-            </intent-filter>
-            <meta-data
-                android:name="android.appwidget.provider"
-                android:resource="@xml/pip_widget_info" />
         </receiver>
 
         <provider

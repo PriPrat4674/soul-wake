@@ -2,7 +2,6 @@ package app.firstlight.alarm;
 
 import android.Manifest;
 import android.app.NotificationManager;
-import android.content.ClipData;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
@@ -15,7 +14,6 @@ import android.os.Build;
 import android.os.PowerManager;
 import android.provider.Settings;
 import android.util.Base64;
-import androidx.core.content.FileProvider;
 import com.getcapacitor.JSArray;
 import com.getcapacitor.JSObject;
 import com.getcapacitor.PermissionState;
@@ -47,7 +45,8 @@ public class FirstLightPlugin extends Plugin {
     private static FirstLightPlugin instance;
     private MediaPlayer preview;
 
-    // "owl" is the launcher entry that now shows the tiger-cub logo (name kept so updates keep your icon).
+    // Launcher entries keep their first names so updates keep your icon: "owl" now shows the
+    // SoulWake smiley (it was the owl, then the tiger), and is the default.
     static final String[] ICONS = { "sunrise", "crescent", "owl", "bell" };
 
     @Override
@@ -84,8 +83,10 @@ public class FirstLightPlugin extends Plugin {
         PowerManager pm = (PowerManager) c.getSystemService(Context.POWER_SERVICE);
         r.put("batteryUnrestricted", pm != null && pm.isIgnoringBatteryOptimizations(c.getPackageName()));
         r.put("ringing", AlarmService.isRinging());
+        r.put("ringingKind", AlarmService.ringingKind());
         r.put("sdk", Build.VERSION.SDK_INT);
         r.put("lockedUntil", AppLock.lockedUntil(c));
+        r.put("guardActive", Guard.uninstallGuarded(c));
         call.resolve(r);
     }
 
@@ -136,6 +137,8 @@ public class FirstLightPlugin extends Plugin {
                 i = appDetails(pkg);
         }
         i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        // SoulWake opening Settings itself (e.g. to allow a permission) is never blocked by the night guard.
+        Guard.pass(c, System.currentTimeMillis() + 3 * 60_000L);
         try {
             c.startActivity(i);
             call.resolve();
@@ -383,41 +386,20 @@ public class FirstLightPlugin extends Plugin {
         call.resolve(r);
     }
 
-    /* ---------------- files & widget ---------------- */
+    /* ---------------- night guard ---------------- */
 
-    /** Saves a file to the app's cache and opens Android's share sheet for it (backups, story cards). */
+    /** { armed, uninstall, bed, wake, beforeMin, afterMin }: Android works out each night's window itself. */
     @PluginMethod
-    public void shareFile(PluginCall call) {
-        String name = call.getString("name", "first-light");
-        String mime = call.getString("mime", "application/octet-stream");
-        String data = call.getString("base64");
-        if (data == null || name == null || !name.matches("[A-Za-z0-9._-]{1,80}")) { call.reject("Bad file"); return; }
-        try {
-            File dir = new File(getContext().getCacheDir(), "shared");
-            if (!dir.exists() && !dir.mkdirs()) { call.reject("No space"); return; }
-            File f = new File(dir, name);
-            try (FileOutputStream out = new FileOutputStream(f)) { out.write(Base64.decode(data, Base64.DEFAULT)); }
-            Uri uri = FileProvider.getUriForFile(getContext(), getContext().getPackageName() + ".fileprovider", f);
-            Intent send = new Intent(Intent.ACTION_SEND).setType(mime).putExtra(Intent.EXTRA_STREAM, uri);
-            send.setClipData(ClipData.newRawUri(name, uri));
-            send.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
-            Intent chooser = Intent.createChooser(send, call.getString("title", "Share"));
-            if (getActivity() != null) getActivity().startActivity(chooser);
-            else getContext().startActivity(chooser.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK));
-            JSObject r = new JSObject();
-            r.put("ok", true);
-            call.resolve(r);
-        } catch (Exception e) {
-            call.reject("Couldn't share the file", e);
-        }
+    public void setGuard(PluginCall call) {
+        Guard.configure(getContext(), call.getData());
+        call.resolve();
     }
 
-    /** The home-screen widget's streak. */
+    /** { until }: Settings isn't intercepted until then (after the guard was solved). */
     @PluginMethod
-    public void setWidget(PluginCall call) {
-        Integer streak = call.getInt("streak");
-        if (streak != null) Prefs.sp(getContext()).edit().putInt("widget_streak", Math.max(0, streak)).apply();
-        PipWidgetProvider.updateAll(getContext());
+    public void guardPass(PluginCall call) {
+        Long until = call.getLong("until");
+        Guard.pass(getContext(), until == null ? 0 : until);
         call.resolve();
     }
 

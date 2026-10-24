@@ -14,6 +14,7 @@ final class Prefs {
     static final String LOCK = "lock";              // JSON {enabled, packages[], maxHours, until}
     static final String SOUNDS = "sounds";          // JSON {alarm, checkin, message, asleep}
     static final String LAUNCH = "launch";          // JSON {kind, pkg, label, at}
+    static final String GUARD = "guard";            // JSON {armed, uninstall, bed, wake, beforeMin, afterMin, passUntil}
 
     private Prefs() {}
 

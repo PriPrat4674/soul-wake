@@ -18,15 +18,15 @@ final class Notifier {
     static void bedtime(Context c, boolean followUp) {
         String name = Prefs.sp(c).getString("user_name", "");
         String hi = name.isEmpty() ? "" : ", " + name;
-        String title = followUp ? "30 minutes are up" : "Heading to bed" + hi + "?";
-        String text = followUp ? "Time to put the phone down." : "Your bedtime is here.";
+        String title = followUp ? "30 minutes are up 🌙" : "Heading to bed" + hi + "? 🌙";
+        String text = followUp ? "Time to put the phone down. Sweet dreams 💤" : "Your bedtime is here. Tomorrow-you says thanks 🫶";
         Notification.Builder b = builder(c, Sounds.channel(c, "bedtime", Prefs.sound(c, "message", "chime")))
             .setContentTitle(title)
             .setContentText(text)
             .setCategory(Notification.CATEGORY_REMINDER)
             .setAutoCancel(true)
             .setContentIntent(openApp(c, 21))
-            .addAction(action(c, "Going to sleep", ActionReceiver.SLEEP_NOW, 31))
+            .addAction(action(c, "Going to sleep 😴", ActionReceiver.SLEEP_NOW, 31))
             .addAction(action(c, "In 30 min", ActionReceiver.SLEEP_LATER, 32));
         if (!followUp) b.addAction(action(c, "Not tonight", ActionReceiver.NOT_TONIGHT, 33));
         post(c, BEDTIME_ID, b.build());
@@ -36,19 +36,19 @@ final class Notifier {
         String sound = Prefs.sound(c, "asleep", "warm");
         if ("off".equals(sound)) return;
         Notification.Builder b = builder(c, Sounds.channel(c, "asleep", "silent".equals(sound) ? "silent" : "warm"))
-            .setContentTitle("Drifting off?")
-            .setContentText("Still awake? Tap below. If not, sleep well.")
+            .setContentTitle("Drifting off? 🌙")
+            .setContentText("If you're still awake, tap below. If not, sleep well. No need to answer 💤")
             .setAutoCancel(true)
             .addAction(action(c, "Still awake", ActionReceiver.STILL_AWAKE, 34));
         if (Build.VERSION.SDK_INT >= 26) b.setTimeoutAfter(20 * 60 * 1000);
         post(c, ASLEEP_ID, b.build());
     }
 
-    /** "Tea is ready": a task's wait is over. Tapping opens First Light on the task list. */
+    /** "Tea is ready ⏰": a task's wait is over. Tapping opens SoulWake on the task list. */
     static void task(Context c, String title, String text) {
         Notification.Builder b = builder(c, Sounds.channel(c, "bedtime", Prefs.sound(c, "message", "chime")))
-            .setContentTitle(title != null ? title : "Next task is ready")
-            .setContentText(text != null ? text : "Time for your proof photo.")
+            .setContentTitle(title != null ? title : "Next task is ready ⏰")
+            .setContentText(text != null ? text : "Time to take your proof photo 📸")
             .setCategory(Notification.CATEGORY_REMINDER)
             .setAutoCancel(true)
             .setContentIntent(openApp(c, 22));

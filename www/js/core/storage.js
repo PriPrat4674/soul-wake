@@ -1,7 +1,6 @@
 // Persistence. Each feature saves under its own key ('alarm', 'tasks', ...),
 // so features never share or overwrite each other's data.
 import { emit } from './events.js';
-import { VERSION } from '../config.js';
 
 const PREFIX = 'fl:';
 const clone = (v) => (v === undefined ? v : JSON.parse(JSON.stringify(v)));
@@ -77,101 +76,4 @@ export async function eraseAll() {
     const req = indexedDB.deleteDatabase(DB_NAME);
     req.onsuccess = req.onerror = req.onblocked = () => resolve();
   });
-}
-
-/* ---------- Encrypted JSON Backup & Restore ---------- */
-
-const toB64 = (buf) => btoa(String.fromCharCode(...new Uint8Array(buf)));
-const fromB64 = (str) => Uint8Array.from(atob(str), (c) => c.charCodeAt(0));
-
-async function deriveKey(password, salt) {
-  const enc = new TextEncoder();
-  const rawKey = await crypto.subtle.importKey('raw', enc.encode(password), 'PBKDF2', false, ['deriveKey']);
-  return crypto.subtle.deriveKey(
-    { name: 'PBKDF2', salt, iterations: 100000, hash: 'SHA-256' },
-    rawKey,
-    { name: 'AES-GCM', length: 256 },
-    false,
-    ['encrypt', 'decrypt']
-  );
-}
-
-export async function exportBackup(password = '') {
-  const data = {};
-  for (let i = 0; i < localStorage.length; i++) {
-    const k = localStorage.key(i);
-    if (k && k.startsWith(PREFIX)) {
-      try { data[k.slice(PREFIX.length)] = JSON.parse(localStorage.getItem(k)); }
-      catch { data[k.slice(PREFIX.length)] = localStorage.getItem(k); }
-    }
-  }
-  const payload = { app: 'first-light', version: VERSION, exportedAt: Date.now(), data };
-  const rawJson = JSON.stringify(payload);
-
-  if (!password) {
-    return JSON.stringify({ app: 'first-light', version: VERSION, encrypted: false, payload });
-  }
-
-  const salt = crypto.getRandomValues(new Uint8Array(16));
-  const iv = crypto.getRandomValues(new Uint8Array(12));
-  const key = await deriveKey(password, salt);
-  const encData = await crypto.subtle.encrypt({ name: 'AES-GCM', iv }, key, new TextEncoder().encode(rawJson));
-
-  return JSON.stringify({
-    app: 'first-light',
-    version: VERSION,
-    encrypted: true,
-    salt: toB64(salt),
-    iv: toB64(iv),
-    ciphertext: toB64(encData)
-  }, null, 2);
-}
-
-export function isEncryptedBackup(text) {
-  try { return !!JSON.parse(String(text || '')).encrypted; } catch { return false; }
-}
-
-export async function importBackup(jsonStr, password = '') {
-  try {
-    const doc = JSON.parse(String(jsonStr || '').trim());
-    if (doc.app !== 'first-light') return { ok: false, error: 'Not a First Light backup file.' };
-
-    let payload;
-    if (doc.encrypted) {
-      if (!password) return { ok: false, error: 'Password required to decrypt this backup.' };
-      const salt = fromB64(doc.salt);
-      const iv = fromB64(doc.iv);
-      const ciphertext = fromB64(doc.ciphertext);
-      const key = await deriveKey(password, salt);
-      try {
-        const decrypted = await crypto.subtle.decrypt({ name: 'AES-GCM', iv }, key, ciphertext);
-        payload = JSON.parse(new TextDecoder().decode(decrypted));
-      } catch {
-        return { ok: false, error: 'Incorrect password or corrupted backup file.' };
-      }
-    } else {
-      payload = doc.payload;
-    }
-
-    if (!payload?.data || typeof payload.data !== 'object') {
-      return { ok: false, error: 'Backup contains no valid data.' };
-    }
-
-    // Replace, don't merge: anything not in the backup goes, so you get exactly what you saved.
-    for (const k of Object.keys(localStorage)) if (k.startsWith(PREFIX)) localStorage.removeItem(k);
-    let count = 0;
-    for (const [k, v] of Object.entries(payload.data)) {
-      localStorage.setItem(PREFIX + k, JSON.stringify(v));
-      count++;
-    }
-
-    emit('profile:changed');
-    emit('tasks:changed');
-    emit('streak:changed');
-    emit('alarm:changed');
-    emit('sleep:changed');
-    return { ok: true, count };
-  } catch (err) {
-    return { ok: false, error: err.message || 'Failed to read backup.' };
-  }
 }

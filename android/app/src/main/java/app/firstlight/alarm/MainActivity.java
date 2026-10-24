@@ -13,6 +13,7 @@ public class MainActivity extends BridgeActivity {
     static final String EXTRA_LAUNCH = "fl_launch";
     static final String EXTRA_LOCKED = "fl_locked";
     static final String EXTRA_LOCKED_LABEL = "fl_locked_label";
+    static final String EXTRA_GUARD = "fl_guard";
     private static final int MAX_SHARED = 2000;
 
     @Override
@@ -39,24 +40,25 @@ public class MainActivity extends BridgeActivity {
         if (intent == null) return;
         String kind = intent.getStringExtra(EXTRA_LAUNCH);
         String locked = intent.getStringExtra(EXTRA_LOCKED);
-        // "Share → First Light": a link shared from another app.
-        boolean isShare = Intent.ACTION_SEND.equals(intent.getAction()) && "text/plain".equals(intent.getType());
-        String shared = isShare ? intent.getStringExtra(Intent.EXTRA_TEXT) : null;
-        // Security: external send intents must never spoof internal alarm triggers
-        if (isShare) { kind = null; locked = null; }
+        String guard = intent.getStringExtra(EXTRA_GUARD);
+        // "Share → SoulWake": a link shared from another app.
+        String shared = Intent.ACTION_SEND.equals(intent.getAction()) && "text/plain".equals(intent.getType())
+            ? intent.getStringExtra(Intent.EXTRA_TEXT) : null;
         if (shared != null && shared.length() > MAX_SHARED) shared = shared.substring(0, MAX_SHARED);
-        if (kind == null && locked == null && shared == null) return;
+        if (kind == null && locked == null && shared == null && guard == null) return;
         JSONObject launch = new JSONObject();
         try {
             launch.put("at", System.currentTimeMillis());
             if (kind != null) launch.put("kind", kind);
             if (locked != null) launch.put("lockedPkg", locked).put("lockedLabel", intent.getStringExtra(EXTRA_LOCKED_LABEL));
             if (shared != null) launch.put("shared", shared);
+            if (guard != null) launch.put("guard", guard);
         } catch (JSONException ignored) {}
         if (shared != null) { intent.setAction(Intent.ACTION_MAIN); intent.removeExtra(Intent.EXTRA_TEXT); }
         Prefs.put(this, Prefs.LAUNCH, launch);
         intent.removeExtra(EXTRA_LAUNCH);
         intent.removeExtra(EXTRA_LOCKED);
+        intent.removeExtra(EXTRA_GUARD);
         if (kind != null) showOverLockScreen();
     }
 

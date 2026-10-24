@@ -6,6 +6,7 @@ import * as alarm from '../features/alarm.js';
 import * as morning from '../features/morning.js';
 import * as battery from '../services/battery.js';
 import { sheet } from './components.js';
+import { guarded } from './guard-view.js';
 import { APP_NAME } from '../config.js';
 import * as native from '../services/native.js';
 
@@ -19,7 +20,7 @@ export function mount(el) {
     <div class="night-controls">
       <button class="btn line block" data-ref="back">Back to the app</button>
       <button class="btn quiet" data-ref="disarm" style="align-self:center">Disarm alarm</button>
-      <p class="tip">Still armed</p>
+      <p class="tip">Still armed 🌙</p>
     </div>`;
   r = refs(root);
   root.setAttribute('role', 'dialog');
@@ -30,7 +31,8 @@ export function mount(el) {
     wake();
   });
   r.back.onclick = () => { dismissed = true; sync(); };
-  r.disarm.onclick = () => alarm.disarm();
+  // In your guarded hours this takes the night-guard check (sums + buddy PIN) first.
+  r.disarm.onclick = () => guarded('disarm', () => alarm.disarm());
 
   wasArmed = alarm.status().armed;
   on('alarm:changed', (a) => {

@@ -1,4 +1,4 @@
-# Builds the First Light APK on GitHub's servers. No Android Studio needed.
+# Builds the SoulWake APK on GitHub's servers. No Android Studio needed.
 # Runs on every push to main, or by hand from the Actions tab ("Run workflow").
 # Pushing a version tag (e.g. v3.0.0) also publishes the APK on the Releases page.
 name: Build APK
@@ -53,16 +53,16 @@ jobs:
       - name: Upload the APK
         uses: actions/upload-artifact@v4
         with:
-          name: first-light-apk
+          name: soulwake-apk
           path: android/app/build/outputs/apk/debug/app-debug.apk
           retention-days: 30
 
       - name: Name the APK
-        run: cp android/app/build/outputs/apk/debug/app-debug.apk first-light.apk
+        run: cp android/app/build/outputs/apk/debug/app-debug.apk soulwake.apk
 
       - name: Publish a release (version tags only)
         if: startsWith(github.ref, 'refs/tags/v')
         uses: softprops/action-gh-release@v2
         with:
-          files: first-light.apk
+          files: soulwake.apk
           generate_release_notes: true

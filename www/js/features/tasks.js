@@ -20,14 +20,7 @@ export function setChaos(on) { opts.chaos = !!on; save('tasks-options', opts); e
 // Returns the new task's id, or null when the list is full.
 export function add(template = NEW_TASK) {
   if (!canAdd()) return null;
-  const t = {
-    id: uid(),
-    name: template.name,
-    proof: template.proof,
-    gapMin: clamp(template.gapMin || 0, 0, MAX_GAP_MIN),
-    kind: template.kind || 'photo',
-    target: template.target || 0
-  };
+  const t = { id: uid(), name: template.name, proof: template.proof, gapMin: clamp(template.gapMin || 0, 0, MAX_GAP_MIN) };
   list.push(t);
   commit();
   return t.id;

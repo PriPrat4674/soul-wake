@@ -1,8 +1,8 @@
 // Sound source: Spotify, two ways.
-// 1. Connect (full songs): sign in with Spotify Premium. Uses First Light's own Spotify app
+// 1. Connect (full songs): sign in with Spotify Premium. Uses SoulWake's own Spotify app (registered as First Light)
 //    (SPOTIFY_CLIENT_ID in config.js), so nobody types a Client ID. Sign-in uses PKCE: no server, no secret.
 //    Playback tries the in-app Spotify player first, then any of your active Spotify devices.
-// 2. Shared link (no sign-in): share a playlist from the Spotify app to First Light (or paste it).
+// 2. Shared link (no sign-in): share a playlist from the Spotify app to SoulWake (or paste it).
 //    It plays through Spotify's official embedded player, which gives 30-second previews.
 import { load, save } from '../../core/storage.js';
 import { emit } from '../../core/events.js';
@@ -125,7 +125,7 @@ export async function handleRedirect() {
       body: new URLSearchParams({ grant_type: 'authorization_code', code: p.get('code'), redirect_uri: redirectUri(), client_id: cid(), code_verifier: pkce.verifier })
     });
     const data = await res.json().catch(() => ({}));
-    if (!res.ok || !data.access_token) return { ok: false, reason: data.error_description || 'Spotify did not accept the sign-in. Make sure your account is on First Light’s Spotify list.' };
+    if (!res.ok || !data.access_token) return { ok: false, reason: data.error_description || 'Spotify did not accept the sign-in. Make sure your account is on SoulWake’s Spotify list.' };
     storeToken(data);
     try { const me = await api('/me'); s.user = { name: me?.display_name || me?.id || 'Spotify user' }; } catch { s.user = { name: 'Spotify user' }; }
     s.lastError = null;

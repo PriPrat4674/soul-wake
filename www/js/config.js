@@ -1,13 +1,10 @@
 // App-wide constants and defaults. Change copy and defaults here, not inside features.
 
-export const APP_NAME = 'First Light';
+export const APP_NAME = 'SoulWake';
 export const VERSION = '3.2.0';
 
 export const TEST_DELAY_MS = 10_000;
 
-// Pip artwork: names of the images in www/img/pip/ (as .webp). Empty = Pip is drawn in code.
-// Pip is a baby tiger. Poses: ecstatic, happy, neutral, grumpy, sleepy, sulking, leap-1, leap-2, wave, sleeping.
-export const PIP_ART = ['ecstatic', 'happy', 'neutral', 'grumpy', 'sleepy', 'sulking', 'leap-1', 'leap-2', 'wave', 'sleeping'];
 // If the app was closed through a scheduled alarm, skip it rather than ringing hours late.
 export const STALE_ALARM_MS = 30 * 60 * 1000;
 export const DEFAULT_ALARM_TIME = '06:30';
@@ -21,17 +18,13 @@ export const DEFAULT_TASKS = [
   { id: 't3', name: 'Tea is ready', proof: 'a freshly made cup of tea', gapMin: 10 }
 ];
 export const NEW_TASK = { name: 'New task', proof: 'what the photo should show', gapMin: 0 };
-// Hard shakes needed after the phrase, when "Shake to stop" is on.
-export const SHAKES_TO_STOP = 25;
 export const TASK_TEMPLATES = [
   { name: 'Make the bed', proof: 'a neatly made bed', gapMin: 0 },
   { name: 'Drink water', proof: 'a glass of water, half finished', gapMin: 0 },
   { name: 'Open the curtains', proof: 'open curtains with daylight', gapMin: 0 },
   { name: 'Stretch', proof: 'you mid-stretch', gapMin: 0 },
   { name: 'Wash your face', proof: 'a wet face or a towel in hand', gapMin: 0 },
-  { name: 'Shoes on', proof: 'your shoes on your feet', gapMin: 0 },
-  { name: 'Shake awake', proof: 'shake the phone 25 times', kind: 'shake', target: 25, gapMin: 0 },
-  { name: 'Walk 25 steps', proof: 'walk 25 steps away from bed', kind: 'steps', target: 25, gapMin: 0 }
+  { name: 'Shoes on', proof: 'your shoes on your feet', gapMin: 0 }
 ];
 export const MAX_TASKS = 12;
 export const MAX_GAP_MIN = 120;
@@ -76,7 +69,7 @@ export const SLEEP_GOAL_LIMITS = [1, 12];
 export const NAP_PRESETS = [20, 30, 45, 60, 90];
 export const NAP_LIMITS = [5, 240];
 
-// Spotify "Connect" for full songs. This is the Client ID of the First Light app on
+// Spotify "Connect" for full songs. This is the Client ID of the app (registered as First Light) on
 // developer.spotify.com (owned by a Premium account). It isn't a secret: sign-in uses PKCE.
 // Leave it empty to offer only "share a playlist" (30-second previews, no sign-in).
 // Spotify allows up to 5 named accounts per app in Development Mode (add them under User Management).
@@ -85,3 +78,26 @@ export const SPOTIFY_SCOPES = [
   'streaming', 'user-read-email', 'user-read-private',
   'user-read-playback-state', 'user-modify-playback-state', 'playlist-read-private'
 ];
+
+// Night guard: from GUARD.beforeBedMin before bedtime until GUARD.afterAlarmMin after the alarm,
+// disarming the alarm (or uninstalling / force-stopping the app) takes sums and a buddy PIN.
+export const GUARD = {
+  beforeBedMin: 120,
+  afterAlarmMin: 120,
+  sums: 3,
+  pinLength: 4,
+  pinTries: 5,                 // wrong PINs in a row before a short pause
+  pinPauseMs: 60_000,
+  forgotWaitMs: 24 * 3600_000, // "Forgot the PIN?" — disarm without it after this long
+  passMs: 5 * 60_000           // after solving the uninstall guard, Settings is free for this long
+};
+
+// Photo check: an on-device CLIP-style model compares each proof photo with the task's words
+// (and, if you took one, a reference photo of the same spot). Downloaded once, then offline.
+export const PHOTO_CHECK = {
+  models: ['Xenova/mobileclip_s0', 'Xenova/clip-vit-base-patch32'],
+  approxMb: 75,
+  matchMin: 0.6,        // the task's words must win at least this share against the decoys
+  placeMin: 0.72,       // cosine similarity to your reference photo
+  triesBeforeTrust: 3   // after this many failed checks, the photo counts (marked unverified)
+};

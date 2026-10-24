@@ -1,5 +1,5 @@
 // Wake-up boost: a voice note from last-night you, and motivating clips.
-// Clips are your own videos, or links to YouTube Shorts / Instagram reels shared to First Light
+// Clips are your own videos, or links to YouTube Shorts / Instagram reels shared to SoulWake
 // (played in each site's official embedded player, never downloaded).
 // Shown once you pass the check-in.
 import { media, load, save } from '../core/storage.js';

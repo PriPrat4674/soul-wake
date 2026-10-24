@@ -4,10 +4,10 @@ import { on, emit } from '../core/events.js';
 import * as native from '../services/native.js';
 import * as profile from './profile.js';
 
-export const ALARM_SOUNDS = [{ id: 'dawn', label: 'Dawn' }, { id: 'bells', label: 'Bells' }, { id: 'classic', label: 'Classic' }];
+export const ALARM_SOUNDS = [{ id: 'dawn', label: 'Dawn', emoji: '🌅' }, { id: 'bells', label: 'Bells', emoji: '🔔' }, { id: 'classic', label: 'Classic', emoji: '⏰' }];
 export const SHORT_SOUNDS = [
-  { id: 'chime', label: 'Chime' }, { id: 'bell', label: 'Bell' },
-  { id: 'marimba', label: 'Marimba' }, { id: 'pluck', label: 'Pluck' }, { id: 'harp', label: 'Harp' }
+  { id: 'chime', label: 'Chime', emoji: '✨' }, { id: 'bell', label: 'Bell', emoji: '🛎️' },
+  { id: 'marimba', label: 'Marimba', emoji: '🎶' }, { id: 'pluck', label: 'Pluck', emoji: '🎸' }, { id: 'harp', label: 'Harp', emoji: '🪕' }
 ];
 const ok = (list, id) => list.some((x) => x.id === id);
 

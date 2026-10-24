@@ -1,4 +1,4 @@
-// Sleep tracking without a watch. You tell First Light when you go to bed (from the bedtime
+// Sleep tracking without a watch. You tell SoulWake when you go to bed (from the bedtime
 // prompt), and it notes when you stop the alarm. That's time in bed, not measured sleep.
 // Guidance: 7–9 h for adults 18–25 (National Sleep Foundation, Hirshkowitz et al. 2015).
 import { load, save } from '../core/storage.js';
@@ -183,10 +183,10 @@ export function lastNight(now = new Date()) {
 
 export function classify(hours, goal = s.schedule.goal) {
   if (hours == null) return null;
-  if (hours < Math.min(goal - 1, 6.5)) return { key: 'short', label: 'Short night', text: `${hours} h is well under your ${goal} h goal.` };
-  if (hours < goal - 0.25) return { key: 'bit-short', label: 'A little short', text: `${hours} h, a bit under your ${goal} h goal.` };
-  if (hours > Math.max(goal + 1.5, 9.5)) return { key: 'long', label: 'Long night', text: `${hours} h is more than usual. Fine now and then; if it’s often, notice how you feel.` };
-  return { key: 'good', label: 'Well rested', text: `${hours} h. Right on your ${goal} h goal.` };
+  if (hours < Math.min(goal - 1, 6.5)) return { key: 'short', emoji: '🥱', label: 'Short night', text: `${hours} h is well under your ${goal} h goal.` };
+  if (hours < goal - 0.25) return { key: 'bit-short', emoji: '😐', label: 'A little short', text: `${hours} h, a bit under your ${goal} h goal.` };
+  if (hours > Math.max(goal + 1.5, 9.5)) return { key: 'long', emoji: '🛌', label: 'Long night', text: `${hours} h is more than usual. Fine now and then; if it’s often, notice how you feel.` };
+  return { key: 'good', emoji: '😊', label: 'Well rested', text: `${hours} h. Right on your ${goal} h goal.` };
 }
 
 // Nights from the last 7 days.

@@ -1,10 +1,10 @@
 <?xml version='1.0' encoding='utf-8'?>
 <resources>
-    <string name="app_name">First Light</string>
-    <string name="title_activity_main">First Light</string>
+    <string name="app_name">SoulWake</string>
+    <string name="title_activity_main">SoulWake</string>
     <string name="package_name">app.firstlight.alarm</string>
     <string name="custom_url_scheme">app.firstlight.alarm</string>
-    <string name="lock_service_label">First Light app lock</string>
-    <string name="lock_service_description">Keeps the apps you chose closed until your morning is proven. It only notices which app opens. It never reads your screen, messages or passwords. It unlocks on its own after a few hours so you are never stuck.</string>
-    <string name="share_label">First Light</string>
+    <string name="lock_service_label">SoulWake app lock &amp; night guard</string>
+    <string name="lock_service_description">App lock keeps the apps you chose closed until your morning is proven; it only notices which app opens, and unlocks on its own after a few hours. Night guard (if you set an alarm) stops half-asleep you from uninstalling or force-stopping SoulWake: during your guarded hours only, it reads Settings and uninstall screens just to spot SoulWake\'s own page. It never reads your messages or passwords, and nothing is stored or sent.</string>
+    <string name="share_label">SoulWake</string>
 </resources>

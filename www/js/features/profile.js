@@ -3,19 +3,17 @@ import { load, save } from '../core/storage.js';
 import { emit } from '../core/events.js';
 
 export const CHOICES = {
-  logo: ['sunrise', 'crescent', 'tiger', 'bell'],
+  logo: ['sunrise', 'crescent', 'soulwake', 'bell'],
   accent: ['gold', 'rose', 'sage', 'sky'],
   theme: ['noir', 'ivory', 'midnight', 'dusk', 'newyork', 'sanfrancisco', 'kerala', 'tokyo', 'seoul'],
   font: ['classic', 'modern', 'friendly', 'typewriter', 'techy', 'kids', 'formal', 'noir'],
-  style: ['elegant', 'soft', 'bold'],
-  accessory: ['none', 'mug', 'scarf', 'shades', 'crown', 'aura']
+  style: ['elegant', 'soft', 'bold']
 };
 
-const DEFAULTS = { name: '', petName: 'Pip', logo: 'sunrise', accent: 'gold', theme: 'noir', font: 'classic', style: 'elegant', onboarded: false, accessory: 'none', pipVoiceEnabled: true };
+const DEFAULTS = { name: '', petName: 'Pip', logo: 'soulwake', accent: 'gold', theme: 'midnight', font: 'classic', style: 'elegant', onboarded: false };
 let p = load('profile', DEFAULTS);
-if (p.logo === 'owl') p.logo = 'tiger'; // Pip used to be an owl
-p.accessory ??= 'none';
-p.pipVoiceEnabled ??= true;
+// Pip used to be an owl, then a tiger cub; both of those logos are now the SoulWake smiley.
+if (p.logo === 'owl' || p.logo === 'tiger') p.logo = 'soulwake';
 // Repair anything unknown (e.g. data from an older version).
 for (const [k, list] of Object.entries(CHOICES)) if (!list.includes(p[k])) p[k] = DEFAULTS[k];
 
@@ -30,7 +28,6 @@ export function set(key, value) {
   if (key === 'name') p.name = cleanName(value, '');
   else if (key === 'petName') p.petName = cleanName(value, 'Pip');
   else if (key === 'onboarded') p.onboarded = !!value;
-  else if (key === 'pipVoiceEnabled') p.pipVoiceEnabled = !!value;
   else if (CHOICES[key]) { if (!CHOICES[key].includes(value)) return null; p[key] = value; }
   else return null;
   save('profile', p);

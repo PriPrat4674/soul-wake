@@ -55,15 +55,14 @@ function sun(st) {
   return `<g class="sun-g">${lines}<circle class="disc${warm ? ' warm' : ''}" cx="${cx.toFixed(1)}" cy="${cy.toFixed(1)}" r="30"/></g>`;
 }
 
-function nightSky(seed, id) {
+function nightSky(seed) {
   const r = rng(seed);
   let stars = '';
   for (let i = 0; i < 34; i++) {
     const x = r() * W, y = 8 + r() * (HORIZON - 40), s = 0.6 + r() * 1.5;
     stars += `<circle class="star" cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${s.toFixed(1)}" style="animation-delay:${(r() * 4).toFixed(2)}s"/>`;
   }
-  // A real crescent (masked), so it looks right over any background.
-  const moon = `<mask id="${id}m"><rect x="270" y="28" width="60" height="60" fill="#fff"/><circle cx="311" cy="51" r="19" fill="#000"/></mask><g class="moon"><circle cx="300" cy="58" r="22" mask="url(#${id}m)"/></g>`;
+  const moon = `<g class="moon"><circle cx="300" cy="58" r="22"/><circle cx="311" cy="51" r="19" class="moon-cut"/></g>`;
   return `<g class="night">${stars}${moon}</g>`;
 }
 
@@ -164,7 +163,7 @@ export function scene({ mins, rise, set, city = null, fx = null, seed = 1, label
       <radialGradient id="${id}g" cx="50%" cy="100%" r="75%"><stop offset="0" style="stop-color:${glow};stop-opacity:.34"/><stop offset="1" style="stop-color:${glow};stop-opacity:0"/></radialGradient>
     </defs>
     <rect class="glow" x="0" y="0" width="${W}" height="${HORIZON}" fill="url(#${id}g)"/>
-    ${st.phase === 'night' || st.phase === 'dusk' ? nightSky(seed, id) : ''}
+    ${st.phase === 'night' || st.phase === 'dusk' ? nightSky(seed) : ''}
     <g clip-path="url(#${id}a)">${sun(st)}</g>
     ${weatherFx(fx, seed)}
     ${cityArt ? `<g class="skyline">${cityArt}</g>` : ''}

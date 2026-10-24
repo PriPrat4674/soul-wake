@@ -1,8 +1,8 @@
 // Settings, opened from the ☰ menu one group at a time (see drawer.js GROUPS).
-// Cards: you, look, sleep, sounds, applock, perms (app) / battery + notif (web), checkin, snooze, reset, about.
+// Cards: you, look, sleep, sounds, applock, guard, perms (app) / battery + notif (web), checkin, snooze, reset, about.
 import { on } from '../core/events.js';
 import { refs, esc, toast } from '../core/util.js';
-import { VERSION, SHAKES_TO_STOP, CHECKIN_LIMITS, SNOOZE_LIMITS, BATTERY_LIMITS, SLEEP_GOAL_LIMITS } from '../config.js';
+import { APP_NAME, VERSION, GUARD, CHECKIN_LIMITS, SNOOZE_LIMITS, BATTERY_LIMITS, SLEEP_GOAL_LIMITS } from '../config.js';
 import * as checkin from '../features/checkin.js';
 import * as snooze from '../features/snooze.js';
 import * as guard from '../features/battery-guard.js';
@@ -10,21 +10,19 @@ import * as profile from '../features/profile.js';
 import * as sleep from '../features/sleep.js';
 import * as sounds from '../features/sounds.js';
 import * as places from '../features/places.js';
+import * as alarmMod from '../features/alarm.js';
 import * as notify from '../services/notify.js';
 import * as battery from '../services/battery.js';
 import * as native from '../services/native.js';
-import * as stats from '../features/stats.js';
-import * as morning from '../features/morning.js';
-import * as wardrobe from '../features/wardrobe.js';
-import { accessoryIcon } from './wardrobe-art.js';
-import { exportBackup, importBackup, isEncryptedBackup, eraseAll } from '../core/storage.js';
-import { saveOrShare } from '../services/files.js';
-import { switchRow, stepperRow, wireSteppers, setStepper, sheet, seg, info, askText } from './components.js';
+import { eraseAll } from '../core/storage.js';
+import { switchRow, stepperRow, wireSteppers, setStepper, sheet, seg, info } from './components.js';
 import { picker, wirePickers } from './pickers.js';
 import * as applockView from './applock-view.js';
 import * as tabs from './tabs.js';
 import { cardsFor } from './drawer.js';
 import { goalNote } from './sleep-view.js';
+import * as nightGuard from '../features/guard.js';
+import * as guardView from './guard-view.js';
 
 const inApp = native.isNative();
 
@@ -35,22 +33,11 @@ export function mount(root) {
     const want = cardsFor(group); // null = every card
     const show = (id) => !want || want.includes(id);
     const c = checkin.settings(), z = snooze.settings(), g = guard.settings(), p = profile.get(), sl = sleep.get(), snd = sounds.get();
-    const soundChips = (purpose, list) => `<div class="chips" data-sounds="${purpose}">${list.map((x) => `<button class="chip" data-sound="${x.id}" aria-pressed="${snd[purpose] === x.id}">${esc(x.label)}</button>`).join('')}</div>`;
+    const soundChips = (purpose, list) => `<div class="chips" data-sounds="${purpose}">${list.map((x) => `<button class="chip" data-sound="${x.id}" aria-pressed="${snd[purpose] === x.id}">${x.emoji} ${esc(x.label)}</button>`).join('')}</div>`;
     const cards = {
       you: `<div class="card" data-group="you">
         <label class="field"><span>Your name</span><input type="text" data-ref="name" maxlength="24" value="${esc(p.name)}" placeholder="What should Pip call you?"></label>
-        <label class="field" style="margin-top:8px"><span>Your cub’s name</span><input type="text" data-ref="petName" maxlength="24" value="${esc(p.petName)}"></label>
-        <p class="label-line" style="margin-top:14px">Wardrobe ${info('Wardrobe', 'Each item unlocks with your best streak and stays unlocked.')}</p>
-        <div class="wardrobe" data-ref="wardrobe">${[{ id: 'none', label: 'None', days: 0 }, ...wardrobe.ITEMS].map((it) => {
-          const open = wardrobe.isUnlocked(it.id);
-          return `<button type="button" data-wear="${it.id}" aria-pressed="${wardrobe.wearing() === it.id}" ${open ? '' : 'disabled'} aria-label="${esc(it.label)}${open ? '' : `, unlocks at a ${it.days}-day streak`}">${accessoryIcon(it.id, 34)}<span>${esc(it.label)}</span>${open ? '' : `<small>${it.days}-day streak</small>`}</button>`;
-        }).join('')}</div>
-        <div style="margin-top:14px">
-          ${switchRow({ key: 'pipVoice', title: 'Pip speaks', desc: 'Alarm, tasks and your grade, aloud', checked: p.pipVoiceEnabled })}
-        </div>
-        <div style="margin-top:8px">
-          ${switchRow({ key: 'vacation', title: 'Vacation mode', desc: 'Pauses your streak', checked: stats.get().vacationMode })}
-        </div>
+        <label class="field" style="margin-top:8px"><span>Your pebble’s name</span><input type="text" data-ref="petName" maxlength="24" value="${esc(p.petName)}"></label>
       </div>`,
       look: `<div class="card" data-group="look">
         <p class="label-line">Logo</p>${picker('logo')}
@@ -74,12 +61,10 @@ export function mount(root) {
         <p class="label-line">Nudges</p>${soundChips('message', sounds.SHORT_SOUNDS)}
       </div>`,
       applock: '<div class="card" data-group="applock"></div>',
+      guard: '<div class="card" data-group="guard"><div data-ref="guardBox"></div></div>',
       perms: inApp ? '<div class="card" data-group="perms"><div data-ref="perms"><p class="muted italic">Checking…</p></div></div>' : '',
-      stop: `<div class="card" data-group="stop">
-        ${switchRow({ key: 'shakeStop', title: 'Shake to stop', desc: `After the phrase, ${SHAKES_TO_STOP} hard shakes`, checked: morning.stopRules().shake })}
-      </div>`,
       snooze: `<div class="card" data-group="snooze">
-        <h3>Snooze ${info('Snooze', 'Every snooze is marked on your calendar and makes Pip grumpy.')}</h3>
+        <h3>Snooze ${info('Snooze', 'Every snooze goes in your Hall of Shame and makes Pip grumpy.')}</h3>
         ${switchRow({ key: 'enabled', title: 'Allow snooze', checked: z.enabled })}
         ${stepperRow({ key: 'minutes', title: 'Length', value: z.minutes, min: SNOOZE_LIMITS.minutes[0], max: SNOOZE_LIMITS.minutes[1], unit: ' min' })}
         ${stepperRow({ key: 'max', title: 'Per morning', value: z.max, min: SNOOZE_LIMITS.max[0], max: SNOOZE_LIMITS.max[1] })}
@@ -100,25 +85,18 @@ export function mount(root) {
         <h3>Alerts ${info('Alerts', 'Lets the check-in reach you if you’ve switched to another app.')}</h3>
         <button class="btn line" data-ref="notif" style="margin-top:12px"></button>
       </div>`,
-      backup: `<div class="card" data-group="backup">
-        <p class="soft">Streaks, tasks and settings. Songs and clips stay on this phone.</p>
-        <div class="row wrap" style="margin-top:12px">
-          <button class="btn gold" data-ref="exportBackup">Export</button>
-          <label class="btn line">Restore<input type="file" data-ref="importFile" accept=".flbk,.json,application/json" hidden></label>
-        </div>
-      </div>`,
       reset: `<div class="card" data-group="reset">
         <p class="soft">Wipes everything on this phone and starts fresh.</p>
         <button class="btn ox" data-ref="reset" style="margin-top:12px">Erase all data</button>
       </div>`,
       about: `<div class="card" data-group="about">
-        <p><strong>First Light ${VERSION}</strong> <span class="muted">${inApp ? '· Android app' : '· web'}</span></p>
+        <p><strong>${APP_NAME} ${VERSION}</strong> <span class="muted">${inApp ? '· Android app' : '· web'}</span></p>
         <p class="small soft" style="margin-top:8px">${esc(places.CREDITS)}.</p>
         <p class="small soft" style="margin-top:6px">Spotify and YouTube are trademarks of their owners and are used only to link to their content.</p>
         <p class="small soft" style="margin-top:6px">Fonts under the SIL Open Font License.</p>
       </div>`
     };
-    const order = ['you', 'look', 'sleep', 'sounds', 'applock', 'perms', 'stop', 'snooze', 'checkin', 'battery', 'notif', 'backup', 'reset', 'about'];
+    const order = ['you', 'look', 'sleep', 'sounds', 'applock', 'guard', 'perms', 'snooze', 'checkin', 'battery', 'notif', 'reset', 'about'];
     root.innerHTML = `
       <header class="page-head"><button class="btn quiet back-link" data-ref="back">← Back</button>${group ? '' : '<h1>Settings</h1>'}</header>
       ${order.filter(show).map((k) => cards[k]).join('')}`;
@@ -128,54 +106,7 @@ export function mount(root) {
 
     if (card('you')) {
       r.name.onchange = () => { r.name.value = profile.set('name', r.name.value); toast('Saved.'); };
-      r.petName.onchange = () => { r.petName.value = profile.set('petName', r.petName.value); toast(`Say hi to ${r.petName.value}`); };
-      r.wardrobe.addEventListener('click', (e) => {
-        const b = e.target.closest('[data-wear]');
-        if (!b || b.disabled || wardrobe.wear(b.dataset.wear) === null) return;
-        r.wardrobe.querySelectorAll('[data-wear]').forEach((x) => x.setAttribute('aria-pressed', String(x === b)));
-      });
-      card('you').addEventListener('change', (e) => {
-        if (e.target.dataset.switch === 'pipVoice') {
-          profile.set('pipVoiceEnabled', e.target.checked);
-          toast(e.target.checked ? 'Pip will speak.' : 'Pip is quiet.');
-        }
-        if (e.target.dataset.switch === 'vacation') {
-          stats.setVacation(e.target.checked);
-          toast(e.target.checked ? 'Streak paused.' : 'Welcome back. Streak resumed.');
-        }
-      });
-    }
-
-    if (card('backup')) {
-      r.exportBackup.onclick = async () => {
-        const pw = await askText({ title: 'Export backup', body: 'Add a password to encrypt it. Leave it empty for a plain file.', label: 'Password (optional)', type: 'password', okLabel: 'Export' });
-        if (pw === null) return;
-        try {
-          const blob = new Blob([await exportBackup(pw)], { type: 'application/json' });
-          const how = await saveOrShare(blob, `first-light-${new Date().toISOString().slice(0, 10)}.flbk`, { title: 'Save backup' });
-          if (how === 'failed') toast('Couldn’t export. Try again.');
-          else if (how !== 'cancelled') toast(pw ? 'Encrypted backup ready.' : 'Backup ready (not encrypted).');
-        } catch {
-          toast('Couldn’t export. Try again.');
-        }
-      };
-      r.importFile.onchange = async (e) => {
-        const file = e.target.files?.[0];
-        e.target.value = '';
-        if (!file) return;
-        const text = await file.text();
-        let pw = '';
-        if (isEncryptedBackup(text)) {
-          pw = await askText({ title: 'Encrypted backup', label: 'Password', type: 'password', okLabel: 'Restore' });
-          if (!pw) return;
-        }
-        const ok = await sheet({ title: 'Replace this phone’s data?', body: 'Your current streak, tasks and settings are replaced by the backup.', actions: [{ label: 'Restore', value: true, style: 'gold' }, { label: 'Cancel', value: false }] });
-        if (!ok) return;
-        const res = await importBackup(text, pw);
-        if (!res.ok) { toast(res.error); return; }
-        toast('Restored. Reloading…');
-        setTimeout(() => location.reload(), 900);
-      };
+      r.petName.onchange = () => { r.petName.value = profile.set('petName', r.petName.value); toast(`Say hi to ${r.petName.value} 🫧`); };
     }
     // Look & feel: rebuild after theme/colour changes so previews use the new palette.
     if (card('look')) wirePickers(card('look'), (kind) => { if (kind === 'theme' || kind === 'accent') { const y = window.scrollY; build(); window.scrollTo(0, y); } });
@@ -201,7 +132,6 @@ export function mount(root) {
     });
     if (card('applock')) applockView.mountPanel(card('applock'));
     if (card('perms')) paintPerms(r.perms);
-    if (card('stop')) card('stop').addEventListener('change', (e) => { if (e.target.dataset.switch === 'shakeStop') morning.setShakeToStop(e.target.checked); });
     if (card('checkin')) wireSteppers(card('checkin'), (k, v) => checkin.setSetting(k, v));
     if (card('snooze')) {
       wireSteppers(card('snooze'), (k, v) => snooze.setSetting(k, v));
@@ -231,10 +161,66 @@ export function mount(root) {
     if (card('reset')) r.reset.onclick = async () => {
       const ok = await sheet({ title: 'Erase everything?', body: 'Tasks, songs, clips, sleep log, streaks and settings. This can’t be undone.', actions: [{ label: 'Erase all data', value: true, style: 'ox' }, { label: 'Keep my data', value: false }] });
       if (!ok) return;
-      await eraseAll();
-      location.reload();
+      // In your guarded hours, wiping everything (and with it the alarm) takes the night-guard check.
+      await guardView.guarded('erase', async () => { await eraseAll(); location.reload(); });
+    };
+    if (card('guard')) paintGuard(r.guardBox);
+  }
+
+  // Night guard: the window, the buddy PIN and (in the app) the uninstall guard.
+  async function paintGuard(box) {
+    const st = nightGuard.state();
+    const sc = sleep.get().schedule;
+    const shift = (hhmm, mins) => { const [h, m] = hhmm.split(':').map(Number); const t = ((h * 60 + m + mins) % 1440 + 1440) % 1440; return `${String(Math.floor(t / 60)).padStart(2, '0')}:${String(t % 60).padStart(2, '0')}`; };
+    const from = shift(sc.bed, -GUARD.beforeBedMin), until = shift(alarmTime(), GUARD.afterAlarmMin);
+    const svc = inApp ? (await native.status()).accessibility : false;
+    const fl = st.forgotLeft;
+    box.innerHTML = `
+      <p class="soft">From 2 h before bedtime until 2 h after your alarm, disarming or moving it takes ${GUARD.sums} sums and your buddy’s PIN.</p>
+      <div class="guard-window"><span class="small muted">Guarded hours</span><strong class="num">${from} – ${until}</strong>${st.guarded ? '<span class="d-badge">On now</span>' : st.enabled ? '<span class="small muted">only while armed</span>' : ''}</div>
+      ${switchRow({ key: 'guardOn', title: 'Night guard', desc: 'Sums + buddy PIN at night', checked: st.enabled })}
+      <hr class="rule">
+      <div class="row between wrap"><span><strong>Buddy PIN</strong><br><span class="small muted">${st.hasPin ? `Set ${new Date(st.setAt).toLocaleDateString([], { day: 'numeric', month: 'short' })} · never shown` : 'Not set yet. Sums only for now.'}</span></span>
+        ${st.hasPin ? '<span class="row"><button class="btn line" data-g="change">Change</button><button class="btn quiet" data-g="remove">Remove</button></span>' : '<button class="btn gold" data-g="set">Set a buddy PIN</button>'}</div>
+      ${fl !== null ? `<p class="small notice" style="margin-top:10px">⏳ 24-hour wait ${fl ? `running: ${Math.ceil(fl / 3600000)} h left` : 'over: you can disarm without the PIN'}. <button class="link-btn" data-g="cancelWait">Cancel the wait</button></p>` : ''}
+      ${inApp ? `<hr class="rule">
+        ${switchRow({ key: 'uninstall', title: 'Guard uninstall & force stop', desc: 'Same check, then 5 minutes to go ahead', checked: st.uninstall })}
+        <div class="perm ${svc ? 'ok' : ''}" style="margin-top:8px"><span class="perm-dot">${svc ? '✓' : '!'}</span><span class="grow"><strong>Accessibility</strong> <span class="small muted">${svc ? 'On' : 'Needed for this guard'}</span></span>${svc ? '' : '<button class="btn line" data-g="svc">Turn on</button>'}</div>
+        <p class="small muted" style="margin-top:6px">Honest limits ${info('Limits', 'Android lets a determined person get round any app: Safe Mode, a computer (ADB) or a factory reset still work. The guard is there to stop half-asleep you, not a hacker. At night it reads only Settings and uninstall screens, just to spot SoulWake’s own page. Nothing is saved or sent.')}</p>` : ''}`;
+    box.onchange = async (e) => {
+      const k = e.target.dataset.switch;
+      if (k === 'guardOn') {
+        if (!e.target.checked && nightGuard.isGuarded()) {
+          e.target.checked = true;
+          if (await guardView.challenge({ reason: 'off' })) nightGuard.setEnabled(false);
+        } else nightGuard.setEnabled(e.target.checked);
+        paintGuard(box);
+      }
+      if (k === 'uninstall') {
+        if (!e.target.checked && nightGuard.isGuarded()) {
+          e.target.checked = true;
+          if (await guardView.challenge({ reason: 'off' })) nightGuard.setUninstall(false);
+        } else nightGuard.setUninstall(e.target.checked);
+        paintGuard(box);
+      }
+    };
+    box.onclick = async (e) => {
+      const b = e.target.closest('[data-g]');
+      if (!b) return;
+      const act = b.dataset.g;
+      if (act === 'set') { if (await guardView.setupScreen()) toast('Buddy PIN set 🔒'); }
+      if (act === 'change' || act === 'remove') {
+        const res = await guardView.askPin({ title: act === 'change' ? 'Current PIN first' : 'Remove the buddy PIN?' });
+        if (res === 'forgot') toast('Start a 24-hour wait from the disarm screen, or ask your buddy.', 4500);
+        if (res === 'ok' && act === 'remove') { nightGuard.clearPin(); toast('Buddy PIN removed.'); }
+        if (res === 'ok' && act === 'change') { nightGuard.clearPin(); if (await guardView.setupScreen()) toast('New buddy PIN set 🔒'); }
+      }
+      if (act === 'cancelWait') { nightGuard.cancelForgot(); toast('Wait cancelled.'); }
+      if (act === 'svc') native.openSettings('accessibility');
+      paintGuard(box);
     };
   }
+  const alarmTime = () => alarmMod.status().time;
 
   async function paintPerms(box) {
     const st = await native.status();
@@ -259,8 +245,12 @@ export function mount(root) {
   }
 
   on('battery:changed', paintBattery);
+  on('guard:changed', () => { const box = root.querySelector('[data-ref="guardBox"]'); if (box && !root.classList.contains('hidden')) paintGuard(box); });
   on('tab:shown', ({ tab, group: gr }) => { if (tab === root.dataset.tab) { group = gr; build(); } });
   document.addEventListener('visibilitychange', () => {
-    if (document.visibilityState === 'visible' && !root.classList.contains('hidden') && inApp) { const box = root.querySelector('[data-ref="perms"]'); if (box) paintPerms(box); }
+    if (document.visibilityState === 'visible' && !root.classList.contains('hidden') && inApp) {
+      const box = root.querySelector('[data-ref="perms"]'); if (box) paintPerms(box);
+      const gb = root.querySelector('[data-ref="guardBox"]'); if (gb) paintGuard(gb);
+    }
   });
 }

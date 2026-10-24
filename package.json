@@ -2,7 +2,7 @@
   "name": "first-light",
   "version": "3.2.0",
   "private": true,
-  "description": "An alarm that makes you prove you're up.",
+  "description": "SoulWake: an alarm that makes you prove you're up.",
   "scripts": {
     "sync": "cap sync android",
     "test": "python3 tests/run_tests.py"

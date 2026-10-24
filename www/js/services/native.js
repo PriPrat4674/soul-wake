@@ -43,8 +43,15 @@ export const configureLock = (cfg) => call('configureLock', cfg);
 export const lockNow = () => call('lockNow');
 export const unlock = () => call('unlock');
 
-// The tiger logo uses the launcher entry that was once the owl, so existing installs keep their icon.
-export const setIcon = (name) => call('setIcon', { name: name === 'tiger' ? 'owl' : name });
+// Launcher entries keep their old names so updates keep your icon: the SoulWake smiley uses the
+// entry that was once the owl (then the tiger).
+export const ICON_ENTRY = { sunrise: 'sunrise', crescent: 'crescent', soulwake: 'owl', bell: 'bell' };
+export const setIcon = (name) => call('setIcon', { name: ICON_ENTRY[name] || 'owl' });
+
+// Night guard: the nightly window ({ armed, uninstall, bed, wake, beforeMin, afterMin }) and a
+// short pass after the uninstall guard is solved. Android checks these itself, even with the app closed.
+export const setGuard = (cfg) => call('setGuard', cfg);
+export const guardPass = (until) => call('guardPass', { until: Math.round(until) });
 
 // Opens a link outside the app: the Spotify/YouTube app if installed, otherwise the browser.
 export async function openUrl(url) {
@@ -52,13 +59,6 @@ export async function openUrl(url) {
   try { window.open(url, '_blank', 'noopener'); return true; } catch { return false; }
 }
 export const takeLaunch = () => call('takeLaunch', {}, {});
-
-// Hands a file to Android's share sheet (save to Drive, send to WhatsApp…). Resolves { ok }.
-export async function shareFile(blob, name, title = 'Share') {
-  if (!FL) return { ok: false };
-  return call('shareFile', { name, mime: blob.type || 'application/octet-stream', title, base64: await blobToBase64(blob) }, { ok: false });
-}
-export const setWidget = (info) => call('setWidget', info);
 
 export function on(event, fn) {
   if (!FL) return () => {};

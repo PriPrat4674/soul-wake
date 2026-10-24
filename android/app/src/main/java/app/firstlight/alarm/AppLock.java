@@ -10,7 +10,7 @@ import org.json.JSONObject;
 /**
  * Which apps are locked, and until when. The lock starts when the wake-up alarm rings and ends
  * when your morning is proven, or automatically after maxHours so you're never stuck.
- * Phone, messages, settings and First Light itself can never be locked.
+ * Phone, messages, settings and SoulWake itself can never be locked.
  */
 final class AppLock {
     static final Set<String> NEVER = new HashSet<>();

@@ -1,6 +1,6 @@
 {
   "appId": "app.firstlight.alarm",
-  "appName": "First Light",
+  "appName": "SoulWake",
   "webDir": "www",
   "server": {
     "androidScheme": "https",
@@ -9,7 +9,7 @@
   },
   "android": {
     "allowMixedContent": false,
-    "backgroundColor": "#000000"
+    "backgroundColor": "#131936"
   },
   "plugins": {
     "SystemBars": { "style": "DARK" }

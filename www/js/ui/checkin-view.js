@@ -12,7 +12,7 @@ export function mount(root) {
   root.innerHTML = `
     <div class="inner">
       <h1 style="font-size:2.8rem">Still up?</h1>
-      <p class="soft" style="margin-top:6px">Tap before it runs out</p>
+      <p class="soft" style="margin-top:6px">Tap before it runs out ⏳</p>
       <div class="ring-count">
         <svg viewBox="0 0 210 210" aria-hidden="true"><circle class="track" cx="105" cy="105" r="96" fill="none" stroke-width="6"/><circle class="bar" data-ref="bar" cx="105" cy="105" r="96" fill="none" stroke-width="6" stroke-dasharray="${C}" stroke-dashoffset="0"/></svg>
         <div class="n" data-ref="count" aria-live="assertive"></div>

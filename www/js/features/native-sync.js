@@ -10,7 +10,7 @@ import * as songs from './songs.js';
 import * as sleep from './sleep.js';
 import * as sounds from './sounds.js';
 import * as applock from './applock.js';
-import * as stats from './stats.js';
+import * as guard from './guard.js';
 import { media, load, save } from '../core/storage.js';
 import * as local from './sources/local.js';
 
@@ -49,10 +49,20 @@ function handleLaunch(launch = {}) {
   if (launch.kind) handleFire(launch.kind);
   if (launch.shared) emit('share:text', { text: launch.shared });
   if (launch.lockedPkg) emit('applock:blocked', { pkg: launch.lockedPkg, label: applock.labelFor(launch.lockedPkg, launch.lockedLabel) });
+  // Someone tried to uninstall or force-stop SoulWake in the guarded hours.
+  if (launch.guard === 'uninstall') emit('guard:uninstallAttempt');
 }
 
 async function catchUp() {
   handleLaunch(await native.takeLaunch());
+  // Opened from the app icon (not the alarm notification) while Android is ringing:
+  // put the alarm screen up anyway, so you can stop it and your morning (and streak) counts.
+  const st = await native.status();
+  if (st.ringing && st.ringingKind) {
+    if ((st.ringingKind === 'wake' || st.ringingKind === 'test') && !morning.isActive()) handleFire(st.ringingKind);
+    else if (st.ringingKind === 'snooze' && morning.get()?.phase === 'snoozed') handleFire('snooze');
+    else if (st.ringingKind === 'nap') handleFire('nap');
+  }
   sleep.applyNativeEvents(await native.takeSleepEvents());
 }
 
@@ -69,16 +79,15 @@ export async function init() {
   on('morning:closed', endCheckin);
   native.on('alarm', ({ kind }) => handleFire(kind));
   native.on('launch', handleLaunch);
+  native.on('guard', ({ kind }) => { if (kind === 'uninstall') emit('guard:uninstallAttempt'); });
   native.on('locked', ({ pkg, label }) => emit('applock:blocked', { pkg, label: applock.labelFor(pkg, label) }));
   native.on('sleepEvent', async () => sleep.applyNativeEvents(await native.takeSleepEvents()));
   document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') catchUp(); });
 
-  const syncWidget = () => native.setWidget({ streak: stats.currentStreak() });
-  on('streak:changed', syncWidget);
   sounds.sync();
-  syncWidget();
   sleep.syncNative();
   applock.sync();
+  guard.syncNative();
   await syncAlarm();
   await catchUp();
   // If the app was killed mid-morning, make sure Android still knows about the check-in.

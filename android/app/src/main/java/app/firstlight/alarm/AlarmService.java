@@ -20,7 +20,7 @@ import java.io.File;
 
 /**
  * Plays the alarm on the ALARM volume (so silent mode doesn't mute it), vibrates, and shows a
- * full-screen notification that opens First Light over the lock screen.
+ * full-screen notification that opens SoulWake over the lock screen.
  * Stops when the app says the phrase was typed, or after 30 minutes as a safety limit.
  */
 public class AlarmService extends Service {
@@ -29,6 +29,7 @@ public class AlarmService extends Service {
     private static final long MAX_RING_MS = 30 * 60 * 1000;
 
     private static volatile boolean ringing = false;
+    private static volatile String ringingKind = null; // what is ringing: wake, test, snooze, checkin, punish, nap
     private MediaPlayer player;
     private Vibrator vibrator;
     private final Handler handler = new Handler(Looper.getMainLooper());
@@ -37,6 +38,7 @@ public class AlarmService extends Service {
     private static final int CLIFF_MS = 40_000;
 
     static boolean isRinging() { return ringing; }
+    static String ringingKind() { return ringing ? ringingKind : null; }
 
     static void stop(Context c) {
         c.stopService(new Intent(c, AlarmService.class));
@@ -59,6 +61,7 @@ public class AlarmService extends Service {
             startForeground(NOTIF_ID, n);
         }
         ringing = true;
+        ringingKind = kind;
         startSound(kind);
         startVibration();
         handler.removeCallbacksAndMessages(null);
@@ -75,11 +78,11 @@ public class AlarmService extends Service {
         PendingIntent openPi = PendingIntent.getActivity(this, 11, open, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
         String title, text;
         switch (kind) {
-            case "checkin": title = "Still up?"; text = "Tap to answer your check-in."; break;
-            case "punish": title = "Round two"; text = "You missed your check-in."; break;
-            case "snooze": title = "Snooze is over"; text = "Up you get. Tap to stop the alarm."; break;
-            case "nap": title = "Nap's over"; text = "Tap to get up. I'll log your nap."; break;
-            default: title = "Good morning"; text = "Tap to stop the alarm. No easy way out."; break;
+            case "checkin": title = "Still up? 👀"; text = "Tap to answer your check-in."; break;
+            case "punish": title = "Round two ⏰"; text = "You missed your check-in."; break;
+            case "snooze": title = "Snooze is over ☀️"; text = "Up you get. Tap to stop the alarm."; break;
+            case "nap": title = "Nap's over ☀️"; text = "Tap to get up. I'll log your nap."; break;
+            default: title = "Good morning ☀️"; text = "Tap to stop the alarm. No easy way out."; break;
         }
         Notification.Builder b;
         if (Build.VERSION.SDK_INT >= 26) {
@@ -113,7 +116,7 @@ public class AlarmService extends Service {
             cliff = false;
             if (custom != null && custom.exists() && custom.length() > 0) {
                 player.setDataSource(custom.getAbsolutePath());
-                cliff =!"punish".equals(kind);
+                cliff = !"punish".equals(kind);
             } else {
                 String name = "checkin".equals(kind) ? "note_" + Prefs.sound(this, "checkin", "bell") : null;
                 int res = name != null ? Sounds.rawId(this, name) : Sounds.alarmRaw(this, Prefs.sound(this, "alarm", "dawn"));
@@ -185,6 +188,7 @@ public class AlarmService extends Service {
     @Override
     public void onDestroy() {
         ringing = false;
+        ringingKind = null;
         handler.removeCallbacksAndMessages(null);
         releasePlayer();
         if (vibrator != null) vibrator.cancel();

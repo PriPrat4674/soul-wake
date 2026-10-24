@@ -1,12 +1,18 @@
-// Artwork drawn in code: the four logos and Pip, the streak pet (an original baby tiger cub).
+// Artwork drawn in code: the four logos and Pip, the SoulWake pebble (an olive-outlined smiley).
 // Pure functions returning SVG.
 
 export const LOGOS = [
   { id: 'sunrise', label: 'Sunrise' },
   { id: 'crescent', label: 'Crescent' },
-  { id: 'tiger', label: 'Tiger' },
+  { id: 'soulwake', label: 'SoulWake' },
   { id: 'bell', label: 'Bell' }
 ];
+
+// Brand colours from the SoulWake logo.
+export const BRAND = { olive: '#B1B864', navy: '#23214A', blue: '#5E7EC0', cream: '#FBF7F0' };
+
+// The pebble outline: a soft gumdrop, wider at the bottom. Shared by the logo and Pip.
+export const PEBBLE = 'M50 13C68 13 84.5 39 87.5 61C90.5 82 74 90.5 50 90.5C26 90.5 9.5 82 12.5 61C15.5 39 32 13 50 13Z';
 
 // c = { bg, fg, accent } colours. `framed` draws the rounded-square app tile.
 export function logoSVG(id, c = {}, { framed = true, size = 64, label = '' } = {}) {
@@ -24,15 +30,8 @@ export function logoSVG(id, c = {}, { framed = true, size = 64, label = '' } = {
       <path d="M58 22a28 28 0 1 0 22 44a23 23 0 1 1-22-44z" fill="${fg}"/>
       <path d="M70 26l2.6 6.4 6.4 2.6-6.4 2.6L70 44l-2.6-6.4-6.4-2.6 6.4-2.6z" fill="${ac}"/>
       <circle cx="80" cy="50" r="2.2" fill="${ac}"/>`,
-    tiger: `
-      <circle cx="29" cy="32" r="10" fill="${ac}"/><circle cx="71" cy="32" r="10" fill="${ac}"/>
-      <circle cx="29" cy="32" r="4.6" fill="${bg}"/><circle cx="71" cy="32" r="4.6" fill="${bg}"/>
-      <circle cx="50" cy="56" r="28" fill="${ac}"/>
-      <path d="M50 30v9M42 32l2 7M58 32l-2 7M23 52h8M24 60h6M77 52h-8M76 60h-6" stroke="${bg}" stroke-width="3.2" stroke-linecap="round"/>
-      <ellipse cx="50" cy="66" rx="15" ry="10" fill="${fg}"/>
-      <circle cx="40" cy="51" r="3.6" fill="${bg}"/><circle cx="60" cy="51" r="3.6" fill="${bg}"/>
-      <path d="M46 60h8l-4 4.5z" fill="${bg}"/>
-      <path d="M50 64.5q-3 4-6.5 2M50 64.5q3 4 6.5 2" fill="none" stroke="${bg}" stroke-width="1.8" stroke-linecap="round"/>`,
+    // The SoulWake smiley, always in its own olive (it's the brand mark).
+    soulwake: `<g transform="translate(9 9) scale(.82)">${smiley(BRAND.olive)}</g>`,
     bell: `
       <circle cx="50" cy="55" r="25" fill="none" stroke="${ac}" stroke-width="5"/>
       <path d="M24 34a10 10 0 0 1 14-12M76 34a10 10 0 0 0-14-12" fill="none" stroke="${ac}" stroke-width="5" stroke-linecap="round"/>
@@ -42,70 +41,80 @@ export function logoSVG(id, c = {}, { framed = true, size = 64, label = '' } = {
   return `<svg viewBox="0 0 100 100" width="${size}" height="${size}" role="img" aria-label="${label || id + ' logo'}">${tile}${art}</svg>`;
 }
 
-/* ---------------- Pip the tiger cub ---------------- */
+// The logo's face: outlined pebble, two round eyes and a wide open smile with a tongue.
+function smiley(col, fill = 'none') {
+  return `<path d="${PEBBLE}" fill="${fill}" stroke="${col}" stroke-width="5.5" stroke-linejoin="round"/>
+    <circle cx="42.5" cy="46" r="4.6" fill="${col}"/><circle cx="57.5" cy="46" r="4.6" fill="${col}"/>
+    <path d="M37.5 54.5h25a1.6 1.6 0 0 1 1.6 1.8C63 64 57 70.5 50 70.5S37 64 35.9 56.3a1.6 1.6 0 0 1 1.6-1.8z" fill="${col}"/>
+    <path d="M42.6 66.2q7.4-6.4 14.8 0q-7.4 4.4-14.8 0z" fill="${fill === 'none' ? '#FFFFFF' : fill}"/>`;
+}
+
+// The SoulWake wordmark: "Soul" in the text colour (navy on light screens), "Wake" in blue.
+export function wordmark(cls = '') {
+  return `<span class="wordmark ${cls}"><span class="wm-soul">Soul</span><span class="wm-wake">Wake</span></span>`;
+}
+
+/* ---------------- Pip, the SoulWake pebble ---------------- */
 export const MOODS = ['ecstatic', 'happy', 'neutral', 'grumpy', 'sleepy', 'sulking'];
+// Extra poses used for moments rather than moods.
+export const POSES = [...MOODS, 'sleeping', 'yawning', 'wave', 'fly'];
 
-// A chubby baby tiger: big head, round ears, three forehead stripes, cream muzzle and belly.
-// Tigers are orange whatever the theme; the accent colour is used for small touches (party hat).
-const FUR = '#E9893B', FUR_DARK = '#C96E26', STRIPE = '#2A1A10', CREAM = '#FBEFD9', NOSE = '#C65F55', BLUSH = '#F39A8F';
+const INK = BRAND.navy, LINE = BRAND.olive, SKIN = BRAND.cream, BLUSH = '#F0A2A0', TEAR = '#7FB7E8';
+const star = (x, y, r) => `<path d="M${x} ${y - r}Q${x + r * .22} ${y - r * .22} ${x + r} ${y}Q${x + r * .22} ${y + r * .22} ${x} ${y + r}Q${x - r * .22} ${y + r * .22} ${x - r} ${y}Q${x - r * .22} ${y - r * .22} ${x} ${y - r}z" fill="${INK}"/>`;
 
-// c = { accent, ink }
-export function petSVG(mood = 'neutral', c = {}, { size = 120, label = '', accessory = 'none' } = {}) {
-  const ink = c.ink || '#1B1407', ac = c.accent || '#C8A55E';
+// pose: a mood or one of POSES. c = { accent, mark }: accent for the party hat, mark for the
+// little doodles around Pip (zz, grumpy puffs), which must show on the page behind him.
+export function petSVG(pose = 'neutral', c = {}, { size = 120, label = '' } = {}) {
+  const ac = c.accent || '#B58C4F', mark = c.mark || INK;
   const eyes = {
-    ecstatic: `<path d="M41 39l2.1 4.3 4.7.7-3.4 3.3.8 4.7-4.2-2.2-4.2 2.2.8-4.7-3.4-3.3 4.7-.7z" fill="${ink}"/>
-               <path d="M59 39l2.1 4.3 4.7.7-3.4 3.3.8 4.7-4.2-2.2-4.2 2.2.8-4.7-3.4-3.3 4.7-.7z" fill="${ink}"/>`,
-    happy: `<path d="M36.5 46q4.5-6 9 0M54.5 46q4.5-6 9 0" fill="none" stroke="${ink}" stroke-width="3" stroke-linecap="round"/>`,
-    neutral: `<ellipse cx="41" cy="45" rx="3.6" ry="4.4" fill="${ink}"/><ellipse cx="59" cy="45" rx="3.6" ry="4.4" fill="${ink}"/>
-              <circle cx="42.2" cy="43.4" r="1.3" fill="#fff"/><circle cx="60.2" cy="43.4" r="1.3" fill="#fff"/>`,
-    grumpy: `<ellipse cx="41" cy="47" rx="3.4" ry="3" fill="${ink}"/><ellipse cx="59" cy="47" rx="3.4" ry="3" fill="${ink}"/>
-             <path d="M35 39.5l10 4M65 39.5l-10 4" stroke="${ink}" stroke-width="3" stroke-linecap="round"/>`,
-    sleepy: `<path d="M36.5 46h9M54.5 46h9" stroke="${ink}" stroke-width="3" stroke-linecap="round"/>`,
-    sulking: `<ellipse cx="41" cy="48" rx="3.2" ry="3.6" fill="${ink}"/><ellipse cx="59" cy="48" rx="3.2" ry="3.6" fill="${ink}"/>
-              <path d="M36 42.5h9.5M54.5 42.5h9.5" stroke="${FUR_DARK}" stroke-width="2.6" stroke-linecap="round"/>
-              <path d="M64.5 51q2 5-1 7q-3-2-1-7z" fill="#7FB7E8"/>`
-  }[mood] || '';
+    ecstatic: star(42, 46, 6) + star(58, 46, 6),
+    happy: `<circle cx="42.5" cy="46" r="4.4" fill="${INK}"/><circle cx="57.5" cy="46" r="4.4" fill="${INK}"/><circle cx="43.8" cy="44.6" r="1.3" fill="#fff"/><circle cx="58.8" cy="44.6" r="1.3" fill="#fff"/>`,
+    neutral: `<ellipse cx="42.5" cy="46" rx="3.8" ry="4.6" fill="${INK}"/><ellipse cx="57.5" cy="46" rx="3.8" ry="4.6" fill="${INK}"/><circle cx="43.6" cy="44.4" r="1.2" fill="#fff"/><circle cx="58.6" cy="44.4" r="1.2" fill="#fff"/>`,
+    grumpy: `<ellipse cx="42.5" cy="48" rx="3.6" ry="3.2" fill="${INK}"/><ellipse cx="57.5" cy="48" rx="3.6" ry="3.2" fill="${INK}"/>
+             <path d="M36 40.5l10 3.6M64 40.5l-10 3.6" stroke="${INK}" stroke-width="3" stroke-linecap="round"/>`,
+    sleepy: `<path d="M37.5 47q5 3.6 10 0M52.5 47q5 3.6 10 0" fill="none" stroke="${INK}" stroke-width="3" stroke-linecap="round"/>`,
+    sulking: `<ellipse cx="42.5" cy="49" rx="3.4" ry="3.8" fill="${INK}"/><ellipse cx="57.5" cy="49" rx="3.4" ry="3.8" fill="${INK}"/>
+              <path d="M37 42.5q5-3 10 0M53 42.5q5-3 10 0" fill="none" stroke="${INK}" stroke-width="2.4" stroke-linecap="round"/>
+              <path d="M63.5 53q2.2 5-.9 7q-3.1-2-.9-7z" fill="${TEAR}"/>`,
+    sleeping: `<path d="M37.5 48q5 3.6 10 0M52.5 48q5 3.6 10 0" fill="none" stroke="${INK}" stroke-width="3" stroke-linecap="round"/>`,
+    yawning: `<path d="M37.5 46q5-3.6 10 0M52.5 46q5-3.6 10 0" fill="none" stroke="${INK}" stroke-width="3" stroke-linecap="round"/>`
+  };
+  eyes.wave = eyes.happy; eyes.fly = eyes.ecstatic;
   const mouth = {
-    ecstatic: `<path d="M44 57q6 8 12 0z" fill="${NOSE}" stroke="${ink}" stroke-width="1.6" stroke-linejoin="round"/>`,
-    happy: `<path d="M50 55.5q-3 4-6.5 2M50 55.5q3 4 6.5 2" fill="none" stroke="${ink}" stroke-width="1.8" stroke-linecap="round"/>`,
-    grumpy: `<path d="M45 60q5-4 10 0" fill="none" stroke="${ink}" stroke-width="1.8" stroke-linecap="round"/>`,
-    sulking: `<path d="M45.5 60q4.5-3 9 0" fill="none" stroke="${ink}" stroke-width="1.8" stroke-linecap="round"/>`,
-    sleepy: `<ellipse cx="50" cy="58.5" rx="2.4" ry="2.8" fill="${ink}" opacity=".85"/>`
-  }[mood] || `<path d="M50 55.5q-3 3.5-6 1.8M50 55.5q3 3.5 6 1.8" fill="none" stroke="${ink}" stroke-width="1.8" stroke-linecap="round"/>`;
-  const cheeks = mood === 'ecstatic' || mood === 'happy' ? `<circle cx="33" cy="53" r="3.6" fill="${BLUSH}" opacity=".55"/><circle cx="67" cy="53" r="3.6" fill="${BLUSH}" opacity=".55"/>` : '';
+    ecstatic: `<path d="M38 55h24a1.5 1.5 0 0 1 1.5 1.7C62.4 64.6 56.8 71 50 71S37.6 64.6 36.5 56.7A1.5 1.5 0 0 1 38 55z" fill="${INK}"/><path d="M43 66.4q7-6 14 0q-7 4.2-14 0z" fill="${BLUSH}"/>`,
+    happy: `<path d="M40 56h20a1.4 1.4 0 0 1 1.4 1.6C60.4 63.8 55.8 68.5 50 68.5S39.6 63.8 38.6 57.6A1.4 1.4 0 0 1 40 56z" fill="${INK}"/><path d="M44.2 65.2q5.8-4.8 11.6 0q-5.8 3.4-11.6 0z" fill="${BLUSH}"/>`,
+    neutral: `<path d="M44 58q6 4.6 12 0" fill="none" stroke="${INK}" stroke-width="2.8" stroke-linecap="round"/>`,
+    grumpy: `<path d="M43.5 63q6.5-5 13 0" fill="none" stroke="${INK}" stroke-width="2.8" stroke-linecap="round"/>`,
+    sleepy: `<ellipse cx="50" cy="60" rx="3" ry="3.4" fill="${INK}"/>`,
+    sulking: `<path d="M44.5 63q5.5-3.8 11 0" fill="none" stroke="${INK}" stroke-width="2.6" stroke-linecap="round"/>`,
+    sleeping: `<path d="M46 60.5q4 2.4 8 0" fill="none" stroke="${INK}" stroke-width="2.4" stroke-linecap="round"/>`,
+    yawning: `<ellipse cx="50" cy="61" rx="6" ry="7.2" fill="${INK}"/><ellipse cx="50" cy="64.5" rx="3.6" ry="2.6" fill="${BLUSH}"/>`
+  };
+  mouth.wave = mouth.happy; mouth.fly = mouth.ecstatic;
+  const blush = ['ecstatic', 'happy', 'wave', 'fly', 'sleeping'].includes(pose)
+    ? `<ellipse cx="33.5" cy="56" rx="4.6" ry="3" fill="${BLUSH}" opacity=".6"/><ellipse cx="66.5" cy="56" rx="4.6" ry="3" fill="${BLUSH}" opacity=".6"/>` : '';
+  const zz = `<g class="pet-sticker" fill="${mark}" font-family="Georgia,serif" font-weight="700"><text x="74" y="24" font-size="13">z</text><text x="84" y="13" font-size="9.5">z</text></g>`;
   const sticker = {
-    ecstatic: `<g class="pet-sticker"><path d="M50 2l9 16H41z" fill="${ac}"/><circle cx="50" cy="2.5" r="2.8" fill="${CREAM}"/><circle cx="46" cy="13" r="1.4" fill="${CREAM}"/><circle cx="53" cy="10" r="1.4" fill="${CREAM}"/></g>`,
-    sleepy: `<g class="pet-sticker" fill="${CREAM}" stroke="${STRIPE}" stroke-width=".6" font-family="Georgia,serif" font-weight="700"><text x="78" y="22" font-size="12">z</text><text x="87" y="12" font-size="9">z</text></g>`,
-    grumpy: `<g class="pet-sticker" stroke="${FUR_DARK}" stroke-width="2.4" stroke-linecap="round" fill="none" opacity=".9"><path d="M14 24q-4-5 0-10M20 20q-4-5 0-10"/><path d="M86 24q4-5 0-10M80 20q4-5 0-10"/></g>`
-  }[mood] || '';
-
-  const accLayer = {
-    mug: `<g class="pet-acc-mug"><rect x="62" y="74" width="13" height="15" rx="3.5" fill="#C0392B" stroke="${ink}" stroke-width="1.2"/><path d="M75 77h3.5q2 0 2 3.5t-2 3.5h-3.5" fill="none" stroke="#C0392B" stroke-width="2.2" stroke-linecap="round"/><path d="M66 70q1.5 -3 3 -1.5t2.5 -3" fill="none" stroke="${CREAM}" stroke-width="1.2" stroke-linecap="round" opacity="0.85"/></g>`,
-    scarf: `<g class="pet-acc-scarf"><path d="M30 63q20 7 40 0q3 7-5 9q-15 3-30 0z" fill="#E74C3C" stroke="${ink}" stroke-width="1.2"/><rect x="58" y="66" width="9" height="17" rx="2" fill="#C0392B" stroke="${ink}" stroke-width="1.2"/><line x1="58" y1="81" x2="67" y2="81" stroke="#F1C40F" stroke-width="1.8"/></g>`,
-    shades: `<g class="pet-acc-shades"><path d="M33 39h16v10q-8 2-16 0z" fill="#1A1A1A" stroke="${ink}" stroke-width="1.2"/><path d="M51 39h16v10q-8 2-16 0z" fill="#1A1A1A" stroke="${ink}" stroke-width="1.2"/><line x1="49" y1="43" x2="51" y2="43" stroke="#555" stroke-width="2"/><line x1="35" y1="41" x2="42" y2="47" stroke="rgba(255,255,255,0.4)" stroke-width="1.2"/></g>`,
-    crown: `<g class="pet-acc-crown"><path d="M37 23l3 -11l10 5l10 -5l3 11z" fill="#F1C40F" stroke="#D4AC0D" stroke-width="1.4"/><circle cx="40" cy="12" r="2" fill="#E74C3C"/><circle cx="50" cy="17" r="2.2" fill="#3498DB"/><circle cx="60" cy="12" r="2" fill="#E74C3C"/></g>`,
-    aura: `<g class="pet-acc-aura" stroke="#F39C12" stroke-width="1.8" stroke-linecap="round" opacity="0.85"><circle cx="50" cy="50" r="47" fill="none" stroke-dasharray="4,6" opacity="0.6"/><line x1="50" y1="2" x2="50" y2="6"/><line x1="84" y1="16" x2="81" y2="19"/><line x1="98" y1="50" x2="94" y2="50"/><line x1="84" y1="84" x2="81" y2="81"/><line x1="16" y1="16" x2="19" y2="19"/><line x1="2" y1="50" x2="6" y2="50"/><line x1="16" y1="84" x2="19" y2="81"/></g>`
-  }[accessory] || '';
-
-  return `<svg class="pet pet-${mood}" viewBox="0 0 100 100" width="${size}" height="${size}" role="img" aria-label="${label || `Pip is ${mood}`}">
-    ${accLayer.includes('pet-acc-aura') ? accLayer : ''}
-    ${sticker}
-    <g class="pet-tail"><path d="M68 84q18 2 20-14q1-8-5-11" fill="none" stroke="${FUR}" stroke-width="6" stroke-linecap="round"/>
-      <path d="M86.4 76.5l-5-2M88.2 68.5l-5.2.2" stroke="${STRIPE}" stroke-width="2.2" stroke-linecap="round"/><circle cx="83" cy="59" r="3.6" fill="${STRIPE}"/></g>
-    <ellipse cx="50" cy="76" rx="22" ry="17" fill="${FUR}"/>
-    <path d="M30 72q5 1 7 4M70 72q-5 1-7 4M31 81q4 0 6 3M69 81q-4 0-6 3" fill="none" stroke="${STRIPE}" stroke-width="2.2" stroke-linecap="round"/>
-    <ellipse cx="50" cy="79" rx="11.5" ry="11" fill="${CREAM}"/>
-    <ellipse cx="40" cy="91" rx="7" ry="4.5" fill="${CREAM}"/><ellipse cx="60" cy="91" rx="7" ry="4.5" fill="${CREAM}"/>
-    <g class="pet-paw pet-paw-l"><ellipse cx="38" cy="83" rx="5.5" ry="4.6" fill="${CREAM}" stroke="${FUR_DARK}" stroke-width="1"/></g>
-    <g class="pet-paw pet-paw-r"><ellipse cx="62" cy="83" rx="5.5" ry="4.6" fill="${CREAM}" stroke="${FUR_DARK}" stroke-width="1"/></g>
-    <circle cx="29" cy="25" r="9" fill="${FUR}"/><circle cx="71" cy="25" r="9" fill="${FUR}"/>
-    <circle cx="29.5" cy="25.5" r="4.4" fill="${STRIPE}"/><circle cx="70.5" cy="25.5" r="4.4" fill="${STRIPE}"/>
-    <circle cx="50" cy="45" r="24" fill="${FUR}"/>
-    <path d="M50 22v8M43 23.5l2 6M57 23.5l-2 6M26.5 41h6.5M27 48h5M73.5 41H67M73 48h-5" stroke="${STRIPE}" stroke-width="2.6" stroke-linecap="round"/>
-    <ellipse cx="50" cy="56" rx="13" ry="8.5" fill="${CREAM}"/>
-    ${cheeks}${eyes}
-    <path d="M46.5 51.5h7l-3.5 4z" fill="${NOSE}"/>
-    ${mouth}
-    ${accLayer && !accLayer.includes('pet-acc-aura') ? accLayer : ''}
+    ecstatic: `<g class="pet-sticker"><path d="M50 -1l10.5 17H39.5z" fill="${ac}"/><circle cx="50" cy="-1" r="3" fill="${SKIN}"/><circle cx="46" cy="11" r="1.5" fill="${SKIN}"/><circle cx="53.5" cy="7.5" r="1.5" fill="${SKIN}"/></g>`,
+    sleepy: zz,
+    sleeping: zz,
+    grumpy: `<g class="pet-sticker" stroke="${mark}" stroke-width="2.4" stroke-linecap="round" fill="none" opacity=".75"><path d="M12 26q-4-5 0-10M18 21q-4-5 0-10"/><path d="M88 26q4-5 0-10M82 21q4-5 0-10"/></g>`,
+    fly: `<g class="pet-sticker" stroke="${LINE}" stroke-width="2.6" stroke-linecap="round" opacity=".9"><path d="M4 44h10M2 56h12M6 68h9"/></g>`
+  }[pose] || '';
+  // Little stubby hands for waving and flying.
+  const hands = pose === 'wave'
+    ? `<g class="pet-hand pet-hand-l"><ellipse cx="13" cy="70" rx="6.5" ry="5" fill="${SKIN}" stroke="${LINE}" stroke-width="3"/></g>
+       <g class="pet-hand pet-hand-r"><ellipse cx="89" cy="46" rx="6" ry="7" fill="${SKIN}" stroke="${LINE}" stroke-width="3"/></g>`
+    : pose === 'fly'
+      ? `<g class="pet-hand pet-hand-l"><ellipse cx="11" cy="52" rx="6" ry="6.5" fill="${SKIN}" stroke="${LINE}" stroke-width="3"/></g>
+         <g class="pet-hand pet-hand-r"><ellipse cx="89" cy="52" rx="6" ry="6.5" fill="${SKIN}" stroke="${LINE}" stroke-width="3"/></g>` : '';
+  const body = pose === 'sleeping' ? 'M50 22C69 22 85.5 44 88 63C90.5 83 74 90.5 50 90.5C26 90.5 9.5 83 12 63C14.5 44 31 22 50 22Z' : PEBBLE;
+  const face = pose === 'sleeping' ? '<g transform="translate(0 5)">' : '<g>';
+  return `<svg class="pet pet-${pose}" viewBox="0 0 100 100" width="${size}" height="${size}" role="img" aria-label="${label || `Pip is ${pose}`}">
+    <ellipse class="pet-shadow" cx="50" cy="94" rx="26" ry="3.6" fill="#000" opacity=".16"/>
+    ${sticker}${hands}
+    <g class="pet-body"><path d="${body}" fill="${SKIN}" stroke="${LINE}" stroke-width="5" stroke-linejoin="round"/>
+      <path d="${pose === 'sleeping' ? 'M28 42q8-11 19-13' : 'M30 34q8-11 19-13'}" fill="none" stroke="#fff" stroke-width="3.4" stroke-linecap="round" opacity=".8"/>
+      ${face}${blush}${eyes[pose] || eyes.neutral}${mouth[pose] || mouth.neutral}</g></g>
   </svg>`;
 }

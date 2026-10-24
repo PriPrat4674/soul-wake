@@ -4,24 +4,29 @@ import { on } from '../core/events.js';
 import * as profile from '../features/profile.js';
 import * as native from '../services/native.js';
 
+// Colours come from the SoulWake palette: burgundy, merlot, antique gold, walnut, champagne,
+// ivory, bone, navy, indigo, olive, pine, graphite and tobacco. Each city gets the shades that suit it.
 export const THEMES = {
-  noir:     { label: 'Noir', note: 'True black. Kindest to your battery.', dark: true,  bg: '#000000', surface: '#0E0D0A', surface2: '#17150F', hair: '#2A261C', hair2: '#3D3727', text: '#F2EADB', text2: '#CBC1AA', muted: '#958C75' },
-  ivory:    { label: 'Ivory', note: 'Warm paper, like a good notebook.', dark: false, bg: '#F6F1E7', surface: '#FFFDF8', surface2: '#EFE8DA', hair: '#E2D8C6', hair2: '#CBBEA6', text: '#1D1A14', text2: '#463F33', muted: '#665D4C' },
-  midnight: { label: 'Midnight', note: 'Deep navy, calm at night.', dark: true,  bg: '#080E1F', surface: '#0F182E', surface2: '#16213C', hair: '#22304F', hair2: '#324368', text: '#E9EEF8', text2: '#B7C2DA', muted: '#8592AF' },
-  dusk:     { label: 'Dusk', note: 'Plum and rose, soft and cosy.', dark: true,  bg: '#160D1B', surface: '#211428', surface2: '#2B1B34', hair: '#3A2646', hair2: '#4D345D', text: '#F6EAF1', text2: '#D7C0CE', muted: '#A88FA1' },
+  noir:     { label: 'Noir', note: 'True black. Kindest to your battery.', dark: true,  bg: '#000000', surface: '#140C08', surface2: '#1E140F', hair: '#2E211A', hair2: '#45332A', text: '#E6E0D6', text2: '#CBBFAF', muted: '#9C8D7C' },
+  ivory:    { label: 'Ivory', note: 'Warm ivory and espresso ink.', dark: false, bg: '#F7F1EA', surface: '#FFFCF8', surface2: '#ECE4DA', hair: '#E2D6C8', hair2: '#CDBBA7', text: '#280B0F', text2: '#4B1E23', muted: '#6B5446' },
+  midnight: { label: 'Midnight', note: 'Navy and champagne, calm at night.', dark: true,  bg: '#131936', surface: '#1C2244', surface2: '#2D2C4A', hair: '#2F3559', hair2: '#454A72', text: '#E9DDCB', text2: '#C9BBA8', muted: '#A497A0' },
+  dusk:     { label: 'Dusk', note: 'Tamarind and merlot, soft and cosy.', dark: true,  bg: '#361319', surface: '#441B21', surface2: '#4F2228', hair: '#5E2E34', hair2: '#764148', text: '#F2E4D8', text2: '#E0C9B9', muted: '#C8AB9B' },
   // City themes: each also gets a skyline, live weather and a local headline (features/places.js).
-  newyork:  { label: 'New York', note: 'Steel skyline nights', city: true, dark: true,  bg: '#0A0E14', surface: '#121922', surface2: '#1A2330', hair: '#25303E', hair2: '#364456', text: '#EEF2F7', text2: '#BCC7D4', muted: '#8B98A9' },
-  sanfrancisco: { label: 'San Francisco', note: 'Fog and bridge orange', city: true, dark: false, bg: '#ECEFF2', surface: '#FFFFFF', surface2: '#E1E6EB', hair: '#D2D9E0', hair2: '#B7C1CB', text: '#141A20', text2: '#38424C', muted: '#56616C' },
-  kerala:   { label: 'Kerala', note: 'Backwaters and palms', city: true, dark: true,  bg: '#05130C', surface: '#0B1E14', surface2: '#11281C', hair: '#1C3828', hair2: '#2A4C39', text: '#EEF5E8', text2: '#C2D6BF', muted: '#8EA790' },
-  tokyo:    { label: 'Tokyo', note: 'Indigo nights, sakura', city: true, dark: true,  bg: '#0C0A1D', surface: '#15122C', surface2: '#1D193A', hair: '#29244E', hair2: '#3A3466', text: '#F4EFF9', text2: '#D0C7E1', muted: '#9C92B7' },
-  seoul:    { label: 'Seoul', note: 'Hanji paper and hills', city: true, dark: false, bg: '#F3EFE7', surface: '#FFFDF8', surface2: '#E9E2D5', hair: '#DCD2C1', hair2: '#C4B7A1', text: '#1A1B1E', text2: '#42454B', muted: '#5F6269' }
+  newyork:  { label: 'New York', note: 'Steel nights, gold windows', city: true, dark: true,  bg: '#1C2430', surface: '#232D3B', surface2: '#2C3747', hair: '#364254', hair2: '#4A586C', text: '#E6E0D6', text2: '#C9C2B6', muted: '#ADA69C' },
+  sanfrancisco: { label: 'San Francisco', note: 'Pearl fog, bridge tobacco', city: true, dark: false, bg: '#E8D4C3', surface: '#F7F1EA', surface2: '#DDC6B2', hair: '#D3BCA7', hair2: '#B9A08A', text: '#13273F', text2: '#2A3E57', muted: '#4C5466' },
+  kerala:   { label: 'Kerala', note: 'Pine backwaters and palms', city: true, dark: true,  bg: '#1A2B26', surface: '#223631', surface2: '#2B413B', hair: '#36504A', hair2: '#4A655D', text: '#E9DCC6', text2: '#CFC3AA', muted: '#A9A88F' },
+  tokyo:    { label: 'Tokyo', note: 'Indigo nights, cherry blossom', city: true, dark: true,  bg: '#100E24', surface: '#1B1834', surface2: '#2D2C4A', hair: '#2E2A4C', hair2: '#433F66', text: '#F7F1EA', text2: '#D8CFD8', muted: '#ABA0B4' },
+  seoul:    { label: 'Seoul', note: 'Bone hanji and walnut roofs', city: true, dark: false, bg: '#E6E0D6', surface: '#F7F1EA', surface2: '#DAD2C4', hair: '#D0C6B5', hair2: '#B7AA94', text: '#4B1E23', text2: '#5E2A2E', muted: '#5F5040' }
 };
 
+// Ids stay as they were (saved profiles use them); the colours and names are new.
+// mode: 'light' = a light button with dark text, 'dark' = a deep button with light text.
+// If a button would melt into the page (e.g. burgundy on a merlot theme), it flips to the other mode.
 export const ACCENTS = {
-  gold: { label: 'Gold', h: 40, s: 50 },
-  rose: { label: 'Rose', h: 350, s: 58 },
-  sage: { label: 'Sage', h: 125, s: 24 },
-  sky:  { label: 'Sky', h: 205, s: 62 }
+  gold: { label: 'Antique Gold', hex: '#B58C4F', mode: 'light' },
+  rose: { label: 'Burgundy', hex: '#710927', mode: 'dark' },
+  sage: { label: 'Olive', hex: '#6B6F4E', mode: 'light' },
+  sky:  { label: 'Navy', hex: '#13273F', mode: 'dark' }
 };
 
 export const FONTS = {
@@ -42,6 +47,14 @@ export const STYLES = {
 };
 
 /* ---------- colour maths ---------- */
+function hexToHsl(hex) {
+  const [r, g, b] = [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16) / 255);
+  const max = Math.max(r, g, b), min = Math.min(r, g, b), l = (max + min) / 2, d = max - min;
+  if (!d) return { h: 0, s: 0, l: l * 100 };
+  const s = d / (1 - Math.abs(2 * l - 1));
+  const h = max === r ? ((g - b) / d) % 6 : max === g ? (b - r) / d + 2 : (r - g) / d + 4;
+  return { h: (h * 60 + 360) % 360, s: s * 100, l: l * 100 };
+}
 function hslToHex(h, s, l) {
   s /= 100; l /= 100;
   const k = (n) => (n + h / 30) % 12;
@@ -68,21 +81,33 @@ function solve(h, s, start, dir, against, min) {
   return dir > 0 ? '#FFFFFF' : '#000000';
 }
 
+const INK_DARK = '#1A0F0A', INK_LIGHT = '#F7F1EA';
+const prefersDarkMode = (a) => a.mode === 'dark';
 export function palette(themeId, accentId) {
-  const t = THEMES[themeId] || THEMES.noir;
+  const t = THEMES[themeId] || THEMES.midnight;
   const a = ACCENTS[accentId] || ACCENTS.gold;
-  const onAccent = '#15110A';
-  const accent = solve(a.h, a.s, t.dark ? 60 : 62, 1, onAccent, 7);        // button fill, dark text on top
-  const accentHi = hslToHex(a.h, a.s, Math.min(88, parseFloat(accentL(accent, a)) + 12));
+  const { h, s: sat, l: baseL } = hexToHsl(a.hex);
+  const S = Math.max(sat, 22);
+  // Button fill: walk lightness from the accent's own shade until its label reads at 7:1.
+  const lightFill = solve(h, prefersDarkMode(a) ? Math.min(S, 50) : S, Math.max(baseL, 50), 1, INK_DARK, 7);
+  const darkFill = solve(h, S, Math.min(baseL, 40), -1, INK_LIGHT, 7);
+  const prefersDark = prefersDarkMode(a);
+  let accent = prefersDark ? darkFill : lightFill;
+  // A button needs to stand out from the page; if it doesn't, use the other mode.
+  if (contrast(accent, t.bg) < 1.3) accent = prefersDark ? lightFill : darkFill;
+  const darkButton = accent === darkFill;
+  const onAccent = darkButton ? INK_LIGHT : INK_DARK;
+  const accentHi = darkButton ? hslToHex(h, S, Math.min(60, accentL(accent) + 9)) : hslToHex(h, S, Math.min(90, accentL(accent) + 12));
   const grounds = [t.bg, t.surface, t.surface2];
-  const accentText = t.dark ? solve(a.h, a.s + 8, 66, 1, grounds, 4.6) : solve(a.h, a.s + 10, 38, -1, grounds, 4.6);
-  const accentLine = t.dark ? hslToHex(a.h, a.s - 10, 34) : hslToHex(a.h, a.s - 10, 66);
-  const danger = t.dark ? solve(4, 55, 58, 1, grounds, 4.6) : solve(4, 62, 42, -1, grounds, 4.6);
+  const accentText = t.dark ? solve(h, Math.min(100, S + 8), 62, 1, grounds, 4.6) : solve(h, Math.min(100, S + 10), 38, -1, grounds, 4.6);
+  const accentLine = t.dark ? hslToHex(h, Math.max(10, S - 10), 38) : hslToHex(h, Math.max(10, S - 10), 62);
+  const danger = t.dark ? solve(4, 60, 58, 1, grounds, 4.6) : solve(354, 70, 40, -1, grounds, 4.6);
   return {
     '--bg': t.bg, '--surface': t.surface, '--surface-2': t.surface2, '--hair': t.hair, '--hair-2': t.hair2,
     '--text': t.text, '--text-2': t.text2, '--muted': t.muted,
     '--accent': accent, '--accent-hi': accentHi, '--accent-text': accentText, '--accent-line': accentLine, '--on-accent': onAccent,
-    '--warm': t.dark ? '#E38E5A' : '#B4552A', '--danger': danger, '--danger-line': t.dark ? '#6E1F21' : '#E4B2AC', '--ok': t.dark ? '#98B48E' : '#3F6B35'
+    '--warm': t.dark ? '#D9A36A' : '#8A5A2B', '--danger': danger, '--danger-line': t.dark ? '#6E1F21' : '#E4B2AC', '--ok': t.dark ? '#B7BC8C' : '#4F5A2E',
+    '--olive': '#B1B864', '--wake-blue': t.dark ? '#8EA6DA' : '#5E7EC0'
   };
 }
 function accentL(hex) {
@@ -108,7 +133,7 @@ export function apply(p = profile.get()) {
 // Colours for drawing the logo and Pip in the current theme.
 export function artColours(p = profile.get()) {
   const v = palette(p.theme, p.accent);
-  return { bg: v['--bg'], fg: v['--text'], accent: v['--accent'], body: v['--accent'], belly: THEMES[p.theme].dark ? '#F2EADB' : '#FFFDF8', ink: '#1B1407' };
+  return { bg: v['--bg'], fg: v['--text'], accent: v['--accent'], mark: v['--text-2'], ink: '#23214A' };
 }
 
 let lastLogo = null;

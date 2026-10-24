@@ -20,6 +20,7 @@ import './features/recovery.js';
 import './features/pet.js';
 import './features/sounds.js';
 import './features/applock.js';
+import './features/guard.js';
 import * as profile from './features/profile.js';
 import * as morning from './features/morning.js';
 import * as spotify from './features/sources/spotify.js';
@@ -28,7 +29,6 @@ import { sync as syncAwake } from './features/keep-awake.js';
 
 // Screens.
 import * as theme from './ui/theme.js';
-import * as skyBg from './ui/sky-bg.js';
 import * as tabs from './ui/tabs.js';
 import * as home from './ui/home.js';
 import * as install from './ui/install.js';
@@ -42,6 +42,7 @@ import * as checkinView from './ui/checkin-view.js';
 import * as boostView from './ui/boost-view.js';
 import * as camera from './ui/camera.js';
 import * as sleepView from './ui/sleep-view.js';
+import './ui/guard-view.js';
 import * as applockView from './ui/applock-view.js';
 import * as onboarding from './ui/onboarding.js';
 import * as petView from './ui/pet-view.js';
@@ -51,7 +52,8 @@ import * as shareView from './ui/share-view.js';
 import './features/places.js';
 
 theme.init();
-skyBg.init();
+// After an update, put the home-screen icon in step with your logo (launcher entries were remapped in 3.2).
+if (native.isNative()) { try { if (localStorage.getItem('fl:icon-synced') !== '3.2') { native.setIcon(profile.get().logo); localStorage.setItem('fl:icon-synced', '3.2'); } } catch {} }
 document.documentElement.classList.toggle('in-app', native.isNative());
 
 if (!native.isNative() && 'serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) {
@@ -65,6 +67,7 @@ appbar.mount($('#appbar'));
 home.mount(section('alarm'));
 if (!native.isNative()) install.mount(section('alarm'));
 tasksEditor.mount(section('tasks'));
+sleepView.mountTab(section('sleep'));
 soundsView.mount(section('sounds'));
 progressView.mount(section('progress'));
 settingsView.mount(section('settings'));

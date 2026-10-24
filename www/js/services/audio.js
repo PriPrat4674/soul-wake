@@ -42,28 +42,6 @@ export function startBeeps() {
 export function stopBeeps() { clearInterval(beepTimer); beepTimer = null; }
 export const isBeeping = () => !!beepTimer;
 
-// Plays an audio file directly (used for Pip's tiger sounds and UI feedback).
-export function playFile(path, vol = 0.9) {
-  try {
-    unlock();
-    const s = new Audio(path);
-    s.volume = Math.max(0, Math.min(1, vol));
-    s.play().catch(() => {});
-  } catch {}
-}
-
-export function playTigerSound(kind = 'roar', vol = 0.95) {
-  const map = {
-    roar: 'sounds/pip_roar.wav',
-    purr: 'sounds/pip_purr.wav',
-    chirp: 'sounds/pip_chirp.wav',
-    grump: 'sounds/pip_grump.wav',
-    sleepy: 'sounds/pip_sleepy.wav'
-  };
-  const path = map[kind] || map.roar;
-  playFile(path, vol);
-}
-
 // cliff: loop only the first N seconds (the rest is saved for later).
 let cliff = null;
 player.addEventListener('timeupdate', () => { if (cliff && player.currentTime >= cliff) player.currentTime = 0; });

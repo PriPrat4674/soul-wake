@@ -98,7 +98,7 @@ export function sheet({ title, body = '', actions = [] }) {
     const back = document.createElement('div');
     back.className = 'sheet-backdrop';
     back.innerHTML = `<div class="sheet" role="dialog" aria-modal="true" aria-labelledby="sheet-title">
-      <h2 id="sheet-title">${esc(title)}</h2>${body ? (/^\s*</.test(body) ? `<div class="sheet-body">${body}</div>` : `<p>${body}</p>`) : ''}
+      <h2 id="sheet-title">${esc(title)}</h2>${body ? `<p>${body}</p>` : ''}
       <div class="actions">${actions.map((a, i) => `<button class="btn ${a.style || 'line'} block" data-i="${i}">${esc(a.label)}</button>`).join('')}</div></div>`;
     const close = (v) => { back.remove(); document.removeEventListener('keydown', onKey); resolve(v); };
     const onKey = (e) => { if (e.key === 'Escape') close(null); };
@@ -110,25 +110,5 @@ export function sheet({ title, body = '', actions = [] }) {
     document.addEventListener('keydown', onKey);
     document.body.appendChild(back);
     back.querySelector('.btn')?.focus();
-  });
-}
-
-// A sheet with one text field. Resolves with the text, or null if dismissed.
-export function askText({ title, body = '', label, type = 'text', okLabel = 'OK', placeholder = '' }) {
-  return new Promise((resolve) => {
-    const back = document.createElement('div');
-    back.className = 'sheet-backdrop';
-    back.innerHTML = `<form class="sheet" role="dialog" aria-modal="true" aria-labelledby="ask-title">
-      <h2 id="ask-title">${esc(title)}</h2>${body ? `<p>${esc(body)}</p>` : ''}
-      <label class="field" style="margin-top:12px"><span>${esc(label)}</span><input type="${type}" data-ask autocomplete="off" placeholder="${esc(placeholder)}"></label>
-      <div class="actions"><button class="btn gold block" type="submit">${esc(okLabel)}</button><button class="btn line block" type="button" data-cancel>Cancel</button></div></form>`;
-    const input = back.querySelector('[data-ask]');
-    const close = (v) => { back.remove(); document.removeEventListener('keydown', onKey); resolve(v); };
-    const onKey = (e) => { if (e.key === 'Escape') close(null); };
-    back.addEventListener('click', (e) => { if (e.target === back || e.target.closest('[data-cancel]')) close(null); });
-    back.querySelector('form').addEventListener('submit', (e) => { e.preventDefault(); close(input.value); });
-    document.addEventListener('keydown', onKey);
-    document.body.appendChild(back);
-    input.focus();
   });
 }

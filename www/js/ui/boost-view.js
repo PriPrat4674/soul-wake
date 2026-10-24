@@ -27,7 +27,7 @@ export function mount(root) {
 
   function showClip(clip) {
     if (!clip) { r.close.disabled = false; return; }
-    r.title.textContent = 'Watch this, then go';
+    r.title.textContent = 'Watch this, then go 🚀';
     if (clip.link) {
       // Played in the site's own embedded player (credit stays with the creator).
       const src = clip.site === 'youtube'

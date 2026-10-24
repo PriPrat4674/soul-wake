@@ -33,7 +33,6 @@ final class AlarmScheduler {
             all.put(alarm.getString("id"), alarm);
             Prefs.put(c, Prefs.ALARMS, all);
             arm(c, alarm);
-            PipWidgetProvider.updateAll(c);
         } catch (JSONException ignored) {}
     }
 
@@ -44,7 +43,6 @@ final class AlarmScheduler {
         AlarmManager am = (AlarmManager) c.getSystemService(Context.ALARM_SERVICE);
         PendingIntent pi = pending(c, id, "", PendingIntent.FLAG_NO_CREATE);
         if (am != null && pi != null) am.cancel(pi);
-        PipWidgetProvider.updateAll(c);
     }
 
     /** After a reboot, time change or app update: put every saved alarm back. */

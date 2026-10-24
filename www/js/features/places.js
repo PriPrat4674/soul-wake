@@ -47,8 +47,7 @@ const GLOOM = /\b(kill|killed|dead|death|dies|died|murder|rape|assault|crash|war
 
 let cache = load('places', {});
 if (!cache || typeof cache !== 'object' || Array.isArray(cache)) cache = {};
-// One request batch per city, so switching cities never waits on (or skips) another city's fetch.
-const inflight = new Map();
+let inflight = null;
 
 export const current = () => {
   const t = profile.get().theme;
@@ -56,16 +55,16 @@ export const current = () => {
 };
 
 /* ---------- helpers ---------- */
-// [codes, label, icon kind (ui/icons.js weatherIcon), sky effect]
 const WEATHER = [
-  [[0], 'Clear', 'clear', null], [[1], 'Mostly clear', 'mostlyClear', null], [[2], 'Partly cloudy', 'partly', 'cloud'], [[3], 'Cloudy', 'cloud', 'cloud'],
-  [[45, 48], 'Foggy', 'fog', 'fog'], [[51, 53, 55, 56, 57], 'Drizzle', 'drizzle', 'rain'], [[61, 63, 65, 66, 67, 80, 81, 82], 'Rain', 'rain', 'rain'],
-  [[71, 73, 75, 77, 85, 86], 'Snow', 'snow', 'snow'], [[95, 96, 99], 'Thunderstorm', 'storm', 'storm']
+  [[0], 'Clear', '☀️', null], [[1], 'Mostly clear', '🌤️', null], [[2], 'Partly cloudy', '⛅', 'cloud'], [[3], 'Cloudy', '☁️', 'cloud'],
+  [[45, 48], 'Foggy', '🌫️', 'fog'], [[51, 53, 55, 56, 57], 'Drizzle', '🌦️', 'rain'], [[61, 63, 65, 66, 67, 80, 81, 82], 'Rain', '🌧️', 'rain'],
+  [[71, 73, 75, 77, 85, 86], 'Snow', '❄️', 'snow'], [[95, 96, 99], 'Thunderstorm', '⛈️', 'storm']
 ];
 export function describeWeather(code, isDay = true) {
   const w = WEATHER.find(([codes]) => codes.includes(Number(code)));
-  if (!w) return { label: 'Weather', kind: 'cloud', fx: null, isDay };
-  return { label: w[1], kind: w[2], fx: w[3], isDay };
+  if (!w) return { label: 'Weather', emoji: '🌡️', fx: null };
+  const emoji = !isDay && (code === 0 || code === 1) ? '🌙' : w[2];
+  return { label: w[1], emoji, fx: w[3] };
 }
 
 // "2026-10-10T05:58" in a place whose UTC offset is `offsetSec` → epoch ms.
@@ -170,20 +169,19 @@ export function info(now = Date.now()) {
 
 export async function refresh({ force = false } = {}) {
   const p = current();
-  if (!p) return null;
-  if (inflight.has(p.id)) return inflight.get(p.id);
+  if (!p || inflight) return inflight;
   const c = (cache[p.id] ||= {});
   const now = Date.now();
-  // Each source shows as soon as it arrives: weather never waits for a slow headline.
-  const landed = () => { save('places', cache); if (current()?.id === p.id) emit('place:changed', info()); };
   const jobs = [];
-  if (force || !c.weather || now - c.weather.at > FRESH.weather) jobs.push(fetchWeather(p).then((w) => { c.weather = w; landed(); }).catch(() => {}));
-  if (force || !c.news || now - c.news.at > (c.news.item ? FRESH.news : FRESH.newsEmpty)) jobs.push(fetchNews(p).then((n) => { c.news = n; landed(); }).catch(() => { c.news = { at: now, item: c.news?.item || null }; save('places', cache); }));
-  if (force || c.fact?.date !== dayKey()) jobs.push(fetchFact(p, dayNumber()).then((f) => { c.fact = f; landed(); }).catch(() => {}));
+  if (force || !c.weather || now - c.weather.at > FRESH.weather) jobs.push(fetchWeather(p).then((w) => { c.weather = w; }).catch(() => {}));
+  if (force || !c.news || now - c.news.at > (c.news.item ? FRESH.news : FRESH.newsEmpty)) jobs.push(fetchNews(p).then((n) => { c.news = n; }).catch(() => { c.news = { at: now, item: c.news?.item || null }; }));
+  if (force || c.fact?.date !== dayKey()) jobs.push(fetchFact(p, dayNumber()).then((f) => { c.fact = f; }).catch(() => {}));
   if (!jobs.length) return null;
-  const job = Promise.all(jobs).finally(() => inflight.delete(p.id));
-  inflight.set(p.id, job);
-  return job;
+  inflight = Promise.all(jobs).then(() => {
+    save('places', cache);
+    emit('place:changed', info());
+  }).finally(() => { inflight = null; });
+  return inflight;
 }
 
 // Keep it fresh while the app is open with a city theme, never in the background.

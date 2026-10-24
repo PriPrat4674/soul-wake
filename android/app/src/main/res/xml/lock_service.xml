@@ -1,8 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- App lock: only listens for which app comes to the front. It never reads what's on screen. -->
+<!-- App lock: listens for which app comes to the front.
+     Night guard: in your guarded hours only, reads Settings and uninstall screens to spot
+     SoulWake's own page (see LockService.java). Nothing else is read; nothing is stored or sent. -->
 <accessibility-service xmlns:android="http://schemas.android.com/apk/res/android"
-    android:accessibilityEventTypes="typeWindowStateChanged"
+    android:accessibilityEventTypes="typeWindowStateChanged|typeWindowContentChanged"
     android:accessibilityFeedbackType="feedbackGeneric"
-    android:notificationTimeout="200"
-    android:canRetrieveWindowContent="false"
+    android:accessibilityFlags="flagReportViewIds"
+    android:notificationTimeout="250"
+    android:canRetrieveWindowContent="true"
     android:description="@string/lock_service_description" />

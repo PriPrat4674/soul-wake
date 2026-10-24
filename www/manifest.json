@@ -1,13 +1,13 @@
 {
-  "name": "First Light",
-  "short_name": "First Light",
-  "description": "An alarm that makes you prove you're up.",
+  "name": "SoulWake",
+  "short_name": "SoulWake",
+  "description": "SoulWake: an alarm that makes you prove you're up.",
   "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",
   "orientation": "portrait",
-  "background_color": "#000000",
-  "theme_color": "#000000",
+  "background_color": "#131936",
+  "theme_color": "#131936",
   "icons": [
     {
       "src": "icons/icon-192.png",
