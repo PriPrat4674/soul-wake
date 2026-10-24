@@ -9,7 +9,7 @@ Type a phrase to stop it, answer a check-in, prove your morning with photos, and
 
 *(Formerly First Light. Updating keeps all your data.)*
 
-[![Build APK](https://github.com/YOUR-USERNAME/soulwake/actions/workflows/build-apk.yml/badge.svg)](https://github.com/YOUR-USERNAME/soulwake/actions/workflows/build-apk.yml)
+
 ![Android 7+](https://img.shields.io/badge/Android-7%2B-3DDC84?logo=android&logoColor=white)
 ![Capacitor 8](https://img.shields.io/badge/Capacitor-8-119EFF?logo=capacitor&logoColor=white)
 ![Tests](https://img.shields.io/badge/tests-187%20passing-brightgreen)
@@ -28,7 +28,7 @@ Most alarm apps lose to the snooze button. Math puzzles and barcode scans don’
 
 SoulWake spreads the wake-up over **20–30 minutes**. A typed phrase stops the alarm. A surprise check-in five minutes later catches you if you lay back down. Photo tasks with forced waits (brush teeth, then tea ten minutes later) get you out of the room. And the apps you’d scroll in bed stay locked until you’re done. At night, disarming the alarm takes three sums and a friend’s PIN, so 2 a.m.-you can’t quietly cancel it.
 
-## ✨ Features
+## Features
 
 **Waking up**
 - ⏰ **Rings with the app closed** and the phone locked, using Android’s own alarm system (the one the Clock app uses). It shows over the lock screen and plays on the alarm volume, so silent mode doesn’t mute it.
@@ -69,7 +69,7 @@ SoulWake spreads the wake-up over **20–30 minutes**. A typed phrase stops the 
 - 🔗 **Share → SoulWake** from Spotify, YouTube or Instagram adds the link where it fits.
 - 🔥 Streaks, a five-week calendar, grades for each morning, and history.
 
-## 📱 Screenshots
+## Screenshots
 
 | Today | Night disarm | Buddy PIN (setup) | Uninstall guard |
 |:---:|:---:|:---:|:---:|
@@ -83,7 +83,7 @@ SoulWake spreads the wake-up over **20–30 minutes**. A typed phrase stops the 
 | **Setup: themes** | **Look & feel** | **Ivory · Burgundy · Friendly** | **Dusk · Gold · Typewriter** |
 | <img src="docs/screenshots/setup-theme.png" width="200"> | <img src="docs/screenshots/settings.png" width="200"> | <img src="docs/screenshots/theme-ivory.png" width="200"> | <img src="docs/screenshots/theme-dusk.png" width="200"> |
 
-## 📥 Install
+## Install
 
 1. Download `soulwake.apk` from the [latest release](https://github.com/YOUR-USERNAME/soulwake/releases/latest), or from the newest run in the [Actions tab](https://github.com/YOUR-USERNAME/soulwake/actions) under **Artifacts**.
 2. Open it on your Android phone. Allow installs from that app when asked. If Play Protect warns about an unknown developer, tap **More details → Install anyway**.
@@ -107,7 +107,7 @@ On Android 13+, app lock needs one extra step for apps installed outside the Pla
 
 > **First night:** tap **Try a test alarm** and lock your phone straight away. It should ring within about 10 seconds. Keep a backup alarm for the first few nights.
 
-## 🛠 Build it yourself
+## Build it yourself
 
 **On GitHub (no tools needed):** fork or push this repo. The [Build APK](.github/workflows/build-apk.yml) workflow builds an APK on every push to `main`. Find it under **Actions → latest run → Artifacts**. Push a tag like `v3.2.0` to publish it as a Release.
 
@@ -129,7 +129,7 @@ npx cap open android      # open in Android Studio, then press Run
 
 All builds are signed with the same key (`android/app/firstlight-debug.keystore`), so a new APK installs over the old one and keeps your data. It’s a personal-use key; use your own release key for a Play Store build.
 
-## 🧠 How it works
+## How it works
 
 SoulWake is a web app (plain HTML, CSS and JavaScript modules, no build step) wrapped as an Android app with [Capacitor](https://capacitorjs.com). A small native plugin does the parts a web page can’t:
 
@@ -163,7 +163,7 @@ docs/screenshots/  images used in this README
 ```
 </details>
 
-## 📚 The research behind the tips
+## The research behind the tips
 
 The short-sleep plan and the Sunday sleep-in rule are based on published studies:
 
@@ -180,7 +180,7 @@ The short-sleep plan and the Sunday sleep-in rule are based on published studies
 
 SoulWake measures **time in bed** (from “Going to sleep” to stopping the alarm), not sleep stages. It’s a habit tool, not a medical device.
 
-## ✅ Testing
+## Testing
 
 - **187 automated browser tests**, all passing. One test applies all 3,456 look combinations and checks contrast is at least 4.5:1 (WCAG AA) for each; another checks no screen scrolls sideways on a 320 px phone.
 - City weather, headlines and Wikipedia are tested with local stand-ins, including offline and gloomy-news cases.
@@ -196,7 +196,7 @@ python3 tests/run_tests.py          # all tests → tests/TEST-REPORT.md
 python3 tests/walkthrough.py        # screenshots → tests/walkthrough/
 ```
 
-## 🗺 Known limits
+## Known limits
 
 - **Android only.** An iPhone version would be a separate build, and iOS doesn’t allow true app locking.
 - **Spotify full songs need Premium**, and Spotify limits small apps to 5 named accounts. Everyone else uses shared playlists (30-second previews), which is plenty for an alarm. YouTube’s player must stay visible, and ads may play without YouTube Premium.
@@ -206,6 +206,6 @@ python3 tests/walkthrough.py        # screenshots → tests/walkthrough/
 - **Night guard limits:** Android lets a determined person get round any app (Safe Mode, a computer with ADB, a factory reset). The uninstall guard needs the Accessibility permission and detects Settings screens by their text, so very unusual phone skins may slip through. It’s built to stop half-asleep you, not a hacker.
 - Not on the Play Store. App lock uses an accessibility service, which Google reviews strictly.
 
-## 🙏 Credits
+## Credits
 
 Built with [Capacitor](https://capacitorjs.com). Fonts: Gochi Hand (the wordmark), Bodoni Moda, EB Garamond, DM Serif Display, DM Sans, Nunito, Courier Prime, Space Grotesk, JetBrains Mono, Fredoka, Cinzel, Cormorant Garamond, Limelight and Josefin Sans (SIL Open Font License, see `www/fonts/`). Weather by [Open-Meteo](https://open-meteo.com) (CC BY 4.0), headlines via the [GDELT Project](https://www.gdeltproject.org), facts from [Wikipedia](https://www.wikipedia.org) (CC BY-SA). Brand marks from [Simple Icons](https://simpleicons.org) (CC0); Spotify, YouTube and Instagram are trademarks of their owners and are used only to link to their content. Skylines are original drawings; the SoulWake logo is the owner’s; Pip is drawn from it. Photo check: [Transformers.js](https://github.com/huggingface/transformers.js) (Apache-2.0), ONNX Runtime Web (MIT), MobileCLIP (Apple, via Hugging Face). Alarm and notification sounds were synthesised for this project.
